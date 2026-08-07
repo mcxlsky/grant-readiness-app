@@ -8,3 +8,5 @@ build/
 venv/
 *.sqlite3
 .DS_Store
+node_modules/
+.netlify/
