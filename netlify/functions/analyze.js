@@ -329,67 +329,168 @@ function computeReadiness(orgJson, siteScan) {
 /* ── Funder matching ────────────────────────────────────────── */
 
 const FUNDER_SEED_LIST = [
-  { name: "The Wallace Foundation", focus: "Education, arts participation, youth development", ntee_prefixes: ["A", "B"], url: "https://www.wallacefoundation.org" },
-  { name: "Robert Wood Johnson Foundation", focus: "Health and health equity", ntee_prefixes: ["E", "F", "G"], url: "https://www.rwjf.org" },
-  { name: "The Kresge Foundation", focus: "Community development, human services, education", ntee_prefixes: ["P", "S", "L", "B"], url: "https://kresge.org" },
-  { name: "Doris Duke Foundation", focus: "Arts, environment, medical research", ntee_prefixes: ["A", "C", "H"], url: "https://www.dorisduke.org" },
-  { name: "Wilburforce Foundation", focus: "Environmental conservation", ntee_prefixes: ["C", "D"], url: "https://wilburforce.org" },
-  { name: "PetSmart Charities", focus: "Animal welfare", ntee_prefixes: ["D"], url: "https://www.petsmartcharities.org" },
-  { name: "United Way (local chapters)", focus: "Human services, community support", ntee_prefixes: ["P", "S"], url: "https://www.unitedway.org" },
-  { name: "National Endowment for the Arts", focus: "Arts & culture", ntee_prefixes: ["A"], url: "https://www.arts.gov" },
-  { name: "Surdna Foundation", focus: "Community, environment, arts, youth justice", ntee_prefixes: ["C", "S", "A", "I"], url: "https://surdna.org" },
-  { name: "The Libra Foundation", focus: "Human rights, environmental and economic justice", ntee_prefixes: ["R", "C", "S"], url: "https://www.librafoundation.org" },
-  { name: "Local/regional community foundation", focus: "General purpose — search by county/city name", ntee_prefixes: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), url: "https://www.cof.org/community-foundation-locator" },
+  { name: "The Wallace Foundation", focus: "Education, arts participation, youth development", ntee_prefixes: ["A", "B"], url: "https://www.wallacefoundation.org", avg_grant: 350000, grant_range: [50000, 1000000], min_revenue: 500000, min_years: 5, requires: ["annual_report", "board_staff", "mission"], deadline: "Rolling (invitation-based)", type: "Private Foundation" },
+  { name: "Robert Wood Johnson Foundation", focus: "Health and health equity", ntee_prefixes: ["E", "F", "G"], url: "https://www.rwjf.org", avg_grant: 500000, grant_range: [50000, 2000000], min_revenue: 1000000, min_years: 5, requires: ["annual_report", "board_staff", "mission"], deadline: "Multiple cycles per year", type: "Private Foundation" },
+  { name: "The Kresge Foundation", focus: "Community development, human services, education", ntee_prefixes: ["P", "S", "L", "B"], url: "https://kresge.org", avg_grant: 200000, grant_range: [25000, 500000], min_revenue: 250000, min_years: 3, requires: ["annual_report", "mission"], deadline: "Rolling", type: "Private Foundation" },
+  { name: "Doris Duke Foundation", focus: "Arts, environment, medical research", ntee_prefixes: ["A", "C", "H"], url: "https://www.dorisduke.org", avg_grant: 300000, grant_range: [50000, 750000], min_revenue: 500000, min_years: 5, requires: ["annual_report", "board_staff"], deadline: "Annual (varies by program)", type: "Private Foundation" },
+  { name: "Wilburforce Foundation", focus: "Environmental conservation", ntee_prefixes: ["C", "D"], url: "https://wilburforce.org", avg_grant: 75000, grant_range: [15000, 200000], min_revenue: 100000, min_years: 2, requires: ["mission", "contact"], deadline: "Rolling", type: "Private Foundation" },
+  { name: "PetSmart Charities", focus: "Animal welfare", ntee_prefixes: ["D"], url: "https://www.petsmartcharities.org", avg_grant: 50000, grant_range: [5000, 500000], min_revenue: 50000, min_years: 2, requires: ["mission", "contact"], deadline: "Quarterly cycles", type: "Corporate Foundation" },
+  { name: "United Way (local chapters)", focus: "Human services, community support", ntee_prefixes: ["P", "S"], url: "https://www.unitedway.org", avg_grant: 35000, grant_range: [5000, 100000], min_revenue: 50000, min_years: 2, requires: ["mission", "board_staff", "contact"], deadline: "Annual (varies by chapter)", type: "Federated Fund" },
+  { name: "National Endowment for the Arts", focus: "Arts & culture", ntee_prefixes: ["A"], url: "https://www.arts.gov", avg_grant: 25000, grant_range: [10000, 100000], min_revenue: 0, min_years: 3, requires: ["mission", "annual_report", "board_staff"], deadline: "Feb & Jul annually", type: "Federal Agency" },
+  { name: "Surdna Foundation", focus: "Community, environment, arts, youth justice", ntee_prefixes: ["C", "S", "A", "I"], url: "https://surdna.org", avg_grant: 150000, grant_range: [25000, 400000], min_revenue: 250000, min_years: 3, requires: ["annual_report", "mission", "board_staff"], deadline: "LOI rolling; full proposals by invitation", type: "Private Foundation" },
+  { name: "The Libra Foundation", focus: "Human rights, environmental and economic justice", ntee_prefixes: ["R", "C", "S"], url: "https://www.librafoundation.org", avg_grant: 100000, grant_range: [10000, 300000], min_revenue: 100000, min_years: 2, requires: ["mission"], deadline: "Rolling", type: "Private Foundation" },
+  { name: "Meyer Memorial Trust", focus: "Education, environment, housing, community", ntee_prefixes: ["B", "C", "L", "S"], url: "https://mmt.org", avg_grant: 150000, grant_range: [25000, 500000], min_revenue: 200000, min_years: 3, requires: ["annual_report", "board_staff", "mission"], deadline: "Rolling", type: "Private Foundation" },
+  { name: "W.K. Kellogg Foundation", focus: "Children, families, communities", ntee_prefixes: ["B", "P", "S", "E"], url: "https://www.wkkf.org", avg_grant: 400000, grant_range: [50000, 1500000], min_revenue: 500000, min_years: 5, requires: ["annual_report", "board_staff", "mission", "donate"], deadline: "Rolling", type: "Private Foundation" },
+  { name: "Community Foundation (local)", focus: "General purpose — search by county/city name", ntee_prefixes: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), url: "https://www.cof.org/community-foundation-locator", avg_grant: 15000, grant_range: [1000, 50000], min_revenue: 0, min_years: 1, requires: ["mission", "contact"], deadline: "Varies by community", type: "Community Foundation" },
 ];
 
-function matchFunders(nteeCode, limit = 5) {
+const REQUIRE_LABELS = {
+  annual_report: "Financial transparency (annual report / 990)",
+  board_staff: "Published board or leadership info",
+  mission: "Clear mission statement",
+  contact: "Contact information",
+  donate: "Online giving / donate page",
+};
+
+function matchFunders(nteeCode, orgJson, readiness, siteScan) {
   const prefix = (nteeCode || "").charAt(0).toUpperCase();
-  let matches = FUNDER_SEED_LIST.filter((f) => f.ntee_prefixes.includes(prefix));
-  if (!matches.length) matches = FUNDER_SEED_LIST.slice(0, limit);
-  return matches.slice(0, limit);
+  const org = orgJson.organization || {};
+  const filing = latestFiling(orgJson);
+  const revenue = filing ? (filing.totrevenue || 0) : 0;
+  const rulingYear = org.ruling_date ? parseInt(String(org.ruling_date).slice(0, 4)) : null;
+  const orgAge = rulingYear ? CURRENT_YEAR - rulingYear : 0;
+  const signals = siteScan ? (siteScan.signals || {}) : {};
+
+  const results = [];
+
+  for (const funder of FUNDER_SEED_LIST) {
+    // Must match cause area
+    if (!funder.ntee_prefixes.includes(prefix)) continue;
+
+    let score = 0;
+    const fits = [];
+    const blockers = [];
+    let eligible = true;
+
+    // Cause-area match (base 30 pts)
+    score += 30;
+    fits.push("Cause-area match");
+
+    // Revenue fit (25 pts)
+    if (revenue >= funder.min_revenue) {
+      score += 25;
+      fits.push(`Revenue ($${(revenue/1e6).toFixed(1)}M) meets threshold`);
+    } else if (funder.min_revenue > 0) {
+      blockers.push(`Minimum revenue $${funder.min_revenue >= 1e6 ? (funder.min_revenue/1e6).toFixed(1)+"M" : (funder.min_revenue/1e3)+"K"} (org has $${revenue >= 1e6 ? (revenue/1e6).toFixed(1)+"M" : Math.round(revenue/1e3)+"K"})`);
+      if (revenue < funder.min_revenue * 0.5) eligible = false; // hard fail if way under
+    }
+
+    // Org age (15 pts)
+    if (orgAge >= funder.min_years) {
+      score += 15;
+      fits.push(`${orgAge} years in operation (min ${funder.min_years})`);
+    } else {
+      blockers.push(`Requires ${funder.min_years}+ years (org est. ${rulingYear || "unknown"})`);
+      if (funder.min_years - orgAge > 2) eligible = false;
+    }
+
+    // Filing health (10 pts)
+    if (readiness.compliance.score >= 70) {
+      score += 10;
+    } else {
+      blockers.push("Filing history has gaps or is out of date");
+    }
+
+    // Website requirements (20 pts, split across requirements)
+    const reqPts = Math.floor(20 / Math.max(funder.requires.length, 1));
+    for (const req of funder.requires) {
+      if (signals[req]) {
+        score += reqPts;
+      } else if (siteScan) {
+        blockers.push(`${REQUIRE_LABELS[req] || req} not found on website`);
+      } else {
+        blockers.push(`No website provided — can't verify: ${REQUIRE_LABELS[req] || req}`);
+      }
+    }
+
+    results.push({
+      ...funder,
+      match_pct: Math.min(score, 100),
+      fits,
+      blockers,
+      eligible,
+    });
+  }
+
+  // Sort by match_pct descending
+  results.sort((a, b) => b.match_pct - a.match_pct);
+  return results;
 }
 
-/* ── Plan generator ─────────────────────────────────────────── */
+/* ── Action items ──────────────────────────────────────────── */
 
-const INTROS = {
-  "Grant-Ready": "{name} shows strong fundamentals across financial health, IRS filing compliance, and public-facing transparency. This is a good time to actively pursue funder outreach.",
-  "Ready with Gaps": "{name} has a workable foundation but carries specific gaps that should be closed before or alongside outreach — funders and reviewers will notice them.",
-  "Needs Work": "{name} is not yet positioned to compete for competitive grants. The priority right now is fixing foundational issues, not funder outreach.",
-  "Not Ready": "{name} has significant foundational gaps. Reaching out to funders before addressing these risks burning the relationship before it starts.",
-};
+function buildActionItems(grantMatches, readiness, siteScan) {
+  // Count how many grants each missing signal blocks
+  const signalBlockCounts = {};
+  for (const m of grantMatches) {
+    for (const req of m.requires || []) {
+      const signals = siteScan ? (siteScan.signals || {}) : {};
+      if (!signals[req]) {
+        signalBlockCounts[req] = (signalBlockCounts[req] || 0) + 1;
+      }
+    }
+  }
 
-const NEXT_STEPS = {
-  ready: [
-    "Weeks 1-2: Close any quick-fix housekeeping gaps below (website, contact info, board/staff page).",
-    "Weeks 2-4: Draft tailored outreach to the funders below, referencing specific program fit.",
-    "Ongoing: Track outreach and responses; re-run this assessment quarterly.",
-  ],
-  not_ready: [
-    "Weeks 1-4: Resolve the foundational gaps below before any funder outreach.",
-    "Month 2: Re-run this assessment to confirm readiness before approaching funders.",
-    "In parallel: consider a readiness-focused consulting engagement to close gaps faster.",
-  ],
-};
+  const actions = [];
 
-function generatePlan(orgName, readiness, funders) {
-  const { tier, overall, gaps, financial, compliance, digital } = readiness;
-  const lines = [];
-  lines.push(INTROS[tier].replace("{name}", orgName));
-  lines.push("");
-  lines.push(`Overall readiness score: ${overall}/100  (${tier})`);
-  lines.push(`  Financial health: ${financial.score}/100   Filing compliance: ${compliance.score}/100   Digital housekeeping: ${digital.score}/100`);
-  lines.push("");
-  lines.push("Top priorities, in order:");
-  const priorities = gaps.length ? gaps.slice(0, 6) : ["No major gaps detected — maintain current practices."];
-  priorities.forEach((g, i) => lines.push(`  ${i + 1}. ${g}`));
-  lines.push("");
-  lines.push("Suggested next steps:");
-  const key = ["Grant-Ready", "Ready with Gaps"].includes(tier) ? "ready" : "not_ready";
-  NEXT_STEPS[key].forEach((s) => lines.push(`  - ${s}`));
-  lines.push("");
-  lines.push("Illustrative funder starter list (cause-area match — placeholder for a full funder database):");
-  funders.forEach((f) => lines.push(`  - ${f.name} — ${f.focus}`));
-  return lines.join("\n");
+  // Website signal actions
+  for (const [signal, count] of Object.entries(signalBlockCounts)) {
+    actions.push({
+      action: `Add ${REQUIRE_LABELS[signal] || signal} to your website`,
+      unlocks: count,
+      category: "digital",
+      priority: count >= 3 ? "high" : count >= 2 ? "medium" : "low",
+    });
+  }
+
+  // Readiness-based actions
+  if (readiness.compliance.score < 70) {
+    actions.push({
+      action: "Bring IRS filings up to date",
+      unlocks: grantMatches.length,
+      category: "compliance",
+      priority: "high",
+    });
+  }
+  if (readiness.financial.score < 50) {
+    actions.push({
+      action: "Strengthen financial position (reduce deficit, build reserves)",
+      unlocks: 0,
+      category: "financial",
+      priority: "medium",
+    });
+  }
+  if (!siteScan) {
+    actions.push({
+      action: "Provide your website URL for a full digital assessment",
+      unlocks: grantMatches.filter(m => m.requires.length > 0).length,
+      category: "digital",
+      priority: "high",
+    });
+  } else if (!siteScan.reachable) {
+    actions.push({
+      action: "Fix website (currently unreachable)",
+      unlocks: grantMatches.filter(m => m.requires.length > 0).length,
+      category: "digital",
+      priority: "high",
+    });
+  }
+
+  // Sort: high priority first, then by unlocks
+  const pOrder = { high: 0, medium: 1, low: 2 };
+  actions.sort((a, b) => pOrder[a.priority] - pOrder[b.priority] || b.unlocks - a.unlocks);
+
+  return actions;
 }
 
 /* ── Handler ────────────────────────────────────────────────── */
@@ -408,13 +509,13 @@ exports.handler = async (event) => {
     const siteScan = websiteUrl ? await scanWebsite(websiteUrl) : null;
     const readiness = computeReadiness(orgJson, siteScan);
     const org = orgJson.organization || {};
-    const funders = matchFunders(org.ntee_code);
-    const planText = generatePlan(org.name || "This organization", readiness, funders);
+    const grantMatches = matchFunders(org.ntee_code, orgJson, readiness, siteScan);
+    const actionItems = buildActionItems(grantMatches, readiness, siteScan);
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ org, readiness, funders, planText, siteScan, websiteUrl }),
+      body: JSON.stringify({ org, readiness, grantMatches, actionItems, siteScan, websiteUrl }),
     };
   } catch (err) {
     return {

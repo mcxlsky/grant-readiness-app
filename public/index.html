@@ -27,13 +27,13 @@
       <div id="results-container"></div>
     </div>
 
-    <div id="analysis-section" class="hidden"></div>
+    <div id="dashboard-section" class="hidden"></div>
   </main>
 
   <footer class="disclaimer">
     Financial and filing data sourced live from the ProPublica Nonprofit Explorer API (IRS Form 990 data).
-    Website housekeeping signals come from a live scan of the org's own site. The funder shortlist is an
-    illustrative placeholder, not a full funder database. This is a working prototype, not a finished product.
+    Website housekeeping signals come from a live scan of the org's own site. Grant matches are illustrative
+    (placeholder seed data). This is a working prototype, not a finished product.
   </footer>
 
 <script>
@@ -42,18 +42,23 @@ function $(sel) { return document.querySelector(sel); }
 function show(el) { el.classList.remove("hidden"); }
 function hide(el) { el.classList.add("hidden"); }
 function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-
-function tierColor(tier) {
-  if (tier === "Grant-Ready") return "linear-gradient(135deg, #1a9a5a, #15804a)";
-  if (tier === "Ready with Gaps") return "linear-gradient(135deg, #5e5ce6, #4845c7)";
-  if (tier === "Needs Work") return "linear-gradient(135deg, #d4880b, #b87208)";
-  return "linear-gradient(135deg, #d93636, #b82a2a)";
+function fmt$(n) {
+  if (n >= 1e6) return "$" + (n/1e6).toFixed(1) + "M";
+  if (n >= 1e3) return "$" + Math.round(n/1e3) + "K";
+  return "$" + n;
 }
 
-function tierSolid(tier) {
+function tierColor(tier) {
   if (tier === "Grant-Ready") return "#1a9a5a";
   if (tier === "Ready with Gaps") return "#5e5ce6";
   if (tier === "Needs Work") return "#c47a09";
+  return "#d93636";
+}
+
+function matchColor(pct) {
+  if (pct >= 80) return "#1a9a5a";
+  if (pct >= 60) return "#5e5ce6";
+  if (pct >= 40) return "#c47a09";
   return "#d93636";
 }
 
@@ -110,9 +115,7 @@ $("#search-form").addEventListener("submit", async (e) => {
     document.querySelectorAll(".analyze-form").forEach((form) => {
       form.addEventListener("submit", (ev) => {
         ev.preventDefault();
-        const ein = form.dataset.ein;
-        const website = form.querySelector('input[name="website"]').value.trim();
-        runAnalysis(ein, website, form.querySelector("button"));
+        runAnalysis(form.dataset.ein, form.querySelector('input[name="website"]').value.trim(), form.querySelector("button"));
       });
     });
   } catch (err) {
@@ -139,7 +142,7 @@ async function runAnalysis(ein, website, btn) {
     const resp = await fetch(url);
     const data = await resp.json();
     if (data.error) { showError(data.error); return; }
-    renderAnalysis(data);
+    renderDashboard(data);
   } catch (err) {
     showError("Analysis failed: " + err.message);
   } finally {
@@ -148,10 +151,12 @@ async function runAnalysis(ein, website, btn) {
   }
 }
 
-function renderAnalysis(data) {
-  const { org, readiness, funders, planText, siteScan, websiteUrl } = data;
-  const gradient = tierColor(readiness.tier);
-  const solid = tierSolid(readiness.tier);
+/* ── Dashboard renderer ───────────────────────────────────── */
+function renderDashboard(data) {
+  const { org, readiness, grantMatches, actionItems, siteScan, websiteUrl } = data;
+  const color = tierColor(readiness.tier);
+  const eligible = grantMatches.filter(m => m.eligible);
+  const topBlockers = actionItems.filter(a => a.priority === "high");
 
   function checkList(checks) {
     return checks.map(([label, passed, weight]) => {
@@ -169,55 +174,117 @@ function renderAnalysis(data) {
       </div>`;
   }
 
+  /* ── Stat tiles ── */
+  const statTiles = `
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <div class="stat-value" style="color:${color}">${readiness.overall}</div>
+        <div class="stat-label">Readiness Score</div>
+        <div class="stat-sub">${esc(readiness.tier)}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">${eligible.length}</div>
+        <div class="stat-label">Grant Matches</div>
+        <div class="stat-sub">${grantMatches.length} total evaluated</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">${topBlockers.length}</div>
+        <div class="stat-label">High-Priority Fixes</div>
+        <div class="stat-sub">${actionItems.length} total actions</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">${eligible.length ? fmt$(eligible.reduce((s,m) => s + m.avg_grant, 0) / eligible.length) : "—"}</div>
+        <div class="stat-label">Avg Grant Size</div>
+        <div class="stat-sub">across matched funders</div>
+      </div>
+    </div>`;
+
+  /* ── Grant match cards ── */
+  let grantCards = "";
+  if (grantMatches.length) {
+    grantCards = grantMatches.map(m => `
+      <div class="grant-card ${m.eligible ? "" : "ineligible"}">
+        <div class="grant-header">
+          <div>
+            <div class="grant-name">${esc(m.name)}</div>
+            <div class="grant-type">${esc(m.type)} · ${esc(m.focus)}</div>
+          </div>
+          <div class="match-badge" style="background:${matchColor(m.match_pct)}">${m.match_pct}%</div>
+        </div>
+        <div class="grant-details">
+          <div class="grant-detail"><span class="detail-label">Grant range</span><span>${fmt$(m.grant_range[0])} – ${fmt$(m.grant_range[1])}</span></div>
+          <div class="grant-detail"><span class="detail-label">Avg award</span><span>${fmt$(m.avg_grant)}</span></div>
+          <div class="grant-detail"><span class="detail-label">Deadline</span><span>${esc(m.deadline)}</span></div>
+        </div>
+        ${m.fits.length ? `<div class="grant-fits">${m.fits.map(f => `<span class="fit-tag">✓ ${esc(f)}</span>`).join("")}</div>` : ""}
+        ${m.blockers.length ? `<div class="grant-blockers">${m.blockers.map(b => `<span class="blocker-tag">✕ ${esc(b)}</span>`).join("")}</div>` : ""}
+        <div class="grant-footer">
+          <a href="${esc(m.url)}" target="_blank" rel="noopener">${new URL(m.url).hostname} →</a>
+          ${!m.eligible ? '<span class="ineligible-badge">May not meet requirements</span>' : ""}
+        </div>
+      </div>`).join("");
+  } else {
+    grantCards = '<p style="color:var(--text-secondary)">No matching funders found for this cause area. Try broadening your search.</p>';
+  }
+
+  /* ── Action items ── */
+  let actionList = "";
+  if (actionItems.length) {
+    actionList = actionItems.map(a => `
+      <div class="action-row">
+        <div class="action-priority priority-${a.priority}"></div>
+        <div class="action-text">${esc(a.action)}</div>
+        ${a.unlocks > 0 ? `<div class="action-unlocks">+${a.unlocks} grant${a.unlocks !== 1 ? "s" : ""}</div>` : ""}
+      </div>`).join("");
+  } else {
+    actionList = '<p style="color:var(--text-secondary)">No blockers found — you\'re in good shape.</p>';
+  }
+
+  /* ── Assemble ── */
   const html = `
     <a class="back-link" href="#" id="back-link">← New search</a>
 
-    <div class="card">
-      <h2>Organization</h2>
-      <div class="org-name" style="font-size:20px;margin-bottom:4px;">${esc(org.name)}</div>
-      <p class="org-meta" style="margin-bottom:0;">
-        EIN ${esc(String(org.ein))} · ${esc(org.address || "")}, ${esc(org.city || "")}, ${esc(org.state || "")} ${esc(org.zipcode || "")}
-        ${org.ntee_code ? ` · NTEE ${esc(org.ntee_code)}` : ""}
-        ${org.ruling_date ? ` · Since ${String(org.ruling_date).slice(0, 4)}` : ""}
-      </p>
-      <div class="score-hero">
-        <div class="score-circle" style="background:${gradient};">${readiness.overall}</div>
-        <div>
-          <span class="tier-badge" style="background:${solid};">${esc(readiness.tier)}</span>
-          <div class="note" style="margin-top:6px;">
-            Financial ${Math.round(readiness.weights.financial * 100)}% ·
-            Compliance ${Math.round(readiness.weights.compliance * 100)}% ·
-            Digital ${Math.round(readiness.weights.digital * 100)}%
-          </div>
+    <div class="dash-header">
+      <div>
+        <div class="dash-org-name">${esc(org.name)}</div>
+        <div class="org-meta">
+          EIN ${esc(String(org.ein))} · ${esc(org.city || "")}, ${esc(org.state || "")}
+          ${org.ntee_code ? ` · NTEE ${esc(org.ntee_code)}` : ""}
+          ${org.ruling_date ? ` · Since ${String(org.ruling_date).slice(0, 4)}` : ""}
         </div>
       </div>
     </div>
 
+    ${statTiles}
+
+    ${actionItems.length ? `
     <div class="card">
-      <h2>Score Breakdown</h2>
-      ${barRow("Financial Health", readiness.financial, "financial")}
-      ${barRow("Filing Compliance", readiness.compliance, "compliance")}
-      ${barRow("Digital Housekeeping", readiness.digital, "digital")}
-      ${!websiteUrl ? '<p class="note">No website URL was provided — digital score reflects that gap alone.</p>' : ""}
-      ${websiteUrl && siteScan && siteScan.pages_checked ? `<p class="note">Scanned: ${siteScan.pages_checked.map(esc).join(", ")}</p>` : ""}
-    </div>
+      <h2>Action Items</h2>
+      <p class="note" style="margin-top:0;margin-bottom:12px;">Fix these to strengthen your grant applications and unlock more matches.</p>
+      ${actionList}
+    </div>` : ""}
 
     <div class="card">
-      <h2>Strategic Plan</h2>
-      <pre class="plan">${esc(planText)}</pre>
+      <h2>Grant Opportunities <span class="count-badge">${grantMatches.length}</span></h2>
+      <p class="note" style="margin-top:0;margin-bottom:16px;">Matched by cause area. Sorted by compatibility with your organization.</p>
+      ${grantCards}
     </div>
 
-    <div class="card">
-      <h2>Funder Shortlist</h2>
-      <p class="note" style="margin-top:0;margin-bottom:12px;">Cause-area match from a placeholder seed list.</p>
-      ${funders.map((f) => `
-        <div class="funder-row">
-          <strong>${esc(f.name)}</strong> — ${esc(f.focus)}
-          ${f.url ? ` · <a href="${esc(f.url)}" target="_blank" rel="noopener">${new URL(f.url).hostname}</a>` : ""}
-        </div>`).join("")}
+    <div class="card collapsible" id="readiness-card">
+      <h2 class="collapsible-header" onclick="toggleSection('readiness-card')">
+        Readiness Details
+        <span class="collapse-icon">▸</span>
+      </h2>
+      <div class="collapsible-body">
+        ${barRow("Financial Health", readiness.financial, "financial")}
+        ${barRow("Filing Compliance", readiness.compliance, "compliance")}
+        ${barRow("Digital Housekeeping", readiness.digital, "digital")}
+        ${!websiteUrl ? '<p class="note">No website URL was provided — digital score reflects that gap alone.</p>' : ""}
+        ${websiteUrl && siteScan && siteScan.pages_checked ? `<p class="note">Scanned: ${siteScan.pages_checked.map(esc).join(", ")}</p>` : ""}
+      </div>
     </div>`;
 
-  const section = $("#analysis-section");
+  const section = $("#dashboard-section");
   section.innerHTML = html;
   show(section);
   hide($("#search-section"));
@@ -229,6 +296,10 @@ function renderAnalysis(data) {
   });
 
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle("open");
 }
 </script>
 </body>
