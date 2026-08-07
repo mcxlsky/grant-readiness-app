@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Grant Readiness{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <header class="top">
+    <h1>Grant Readiness & Prospecting — Prototype</h1>
+    <p>Live 990 data (ProPublica) + a real scan of the org's website. Working prototype — not for production use.</p>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="disclaimer">
+    Financial and filing data sourced live from the ProPublica Nonprofit Explorer API (IRS Form 990 data).
+    Website housekeeping signals come from a live scan of the org's own site. The funder shortlist is an
+    illustrative placeholder, not a full funder database. This is a working prototype, not a finished product.
+  </footer>
+</body>
+</html>

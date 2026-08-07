@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ org.name }} — Readiness{% endblock %}
+
+{% macro tier_color(tier) -%}
+  {%- if tier == "Grant-Ready" -%}#2e7d5b
+  {%- elif tier == "Ready with Gaps" -%}#3f7d9e
+  {%- elif tier == "Needs Work" -%}#b8860b
+  {%- else -%}#b3432b
+  {%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+  <a class="back-link" href="{{ url_for('index') }}">&larr; New search</a>
+
+  <div class="card">
+    <h2>{{ org.name }}</h2>
+    <p class="org-meta">
+      EIN {{ org.ein }} &middot; {{ org.address }}, {{ org.city }}, {{ org.state }} {{ org.zipcode }}
+      {% if org.ntee_code %} &middot; NTEE {{ org.ntee_code }}{% endif %}
+      {% if org.ruling_date %} &middot; IRS-recognized since {{ org.ruling_date[:4] }}{% endif %}
+    </p>
+
+    <div class="score-hero" style="margin-top:18px;">
+      <div class="score-circle" style="background:{{ tier_color(readiness.tier) }};">{{ readiness.overall }}</div>
+      <div>
+        <span class="tier-badge" style="background:{{ tier_color(readiness.tier) }};">{{ readiness.tier }}</span>
+        <div class="note" style="margin-top:4px;">
+          Weighted: financial health {{ (readiness.weights.financial*100)|int }}%,
+          filing compliance {{ (readiness.weights.compliance*100)|int }}%,
+          digital housekeeping {{ (readiness.weights.digital*100)|int }}%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Score breakdown</h2>
+
+    <div class="bar-row">
+      <div class="label"><span>Financial health</span><span>{{ readiness.financial.score }}/100</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:{{ readiness.financial.score }}%; background:#1f4e5f;"></div></div>
+      <ul class="check-list">
+        {% for label, passed, weight in readiness.financial.checks %}
+          <li class="{{ 'pass' if passed else ('neutral' if weight == 0 and passed else 'fail') }}">{{ label }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="bar-row">
+      <div class="label"><span>Filing compliance</span><span>{{ readiness.compliance.score }}/100</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:{{ readiness.compliance.score }}%; background:#3f7d9e;"></div></div>
+      <ul class="check-list">
+        {% for label, passed, weight in readiness.compliance.checks %}
+          <li class="{{ 'pass' if passed else 'fail' }}">{{ label }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="bar-row">
+      <div class="label"><span>Digital housekeeping</span><span>{{ readiness.digital.score }}/100</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:{{ readiness.digital.score }}%; background:#b8860b;"></div></div>
+      <ul class="check-list">
+        {% for label, passed, weight in readiness.digital.checks %}
+          <li class="{{ 'pass' if passed else 'fail' }}">{{ label }}</li>
+        {% endfor %}
+      </ul>
+      {% if not website_url %}
+        <p class="note">No website URL was provided, so this score reflects that gap alone. Re-run with a URL for a full picture.</p>
+      {% elif site_scan and site_scan.pages_checked %}
+        <p class="note">Pages checked: {{ site_scan.pages_checked|join(', ') }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Generated strategic plan</h2>
+    <p class="note">Generated directly from the score above — no export or copy-paste into another tool.</p>
+    <pre class="plan">{{ plan_text }}</pre>
+  </div>
+
+  <div class="card">
+    <h2>Illustrative funder shortlist</h2>
+    <p class="note">Placeholder cause-area match, not a full funder database (see README).</p>
+    {% for f in funders %}
+      <div class="funder-row">
+        <strong>{{ f.name }}</strong> — {{ f.focus }}
+        {% if f.url %} &middot; <a href="{{ f.url }}" target="_blank" rel="noopener">{{ f.url }}</a>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

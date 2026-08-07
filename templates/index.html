@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Find an organization{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>Find an organization</h2>
+    <form class="search-form" action="{{ url_for('search') }}" method="get">
+      <input type="text" name="q" placeholder="Organization name, e.g. &quot;Teach For America&quot;" value="{{ query }}" required />
+      <input type="text" name="state" class="state" placeholder="State" maxlength="2" value="{{ state }}" />
+      <button type="submit">Search</button>
+    </form>
+    <p class="note">Searches live IRS/ProPublica records by organization name. State is optional (2-letter code).</p>
+  </div>
+
+  {% if error %}
+    <div class="error-box">{{ error }}</div>
+  {% endif %}
+
+  {% if results %}
+    <div class="card">
+      <h2>{{ results|length }} result{{ 's' if results|length != 1 else '' }} for &quot;{{ query }}&quot;</h2>
+      {% for org in results %}
+        <div class="result-row">
+          <div class="org-name">{{ org.name }}</div>
+          <div class="org-meta">
+            EIN {{ org.strein }} &middot; {{ org.city }}, {{ org.state }}
+            {% if org.ntee_code %} &middot; NTEE {{ org.ntee_code }}{% endif %}
+          </div>
+          <form action="{{ url_for('analyze', ein=org.ein) }}" method="get">
+            <input type="text" name="website" placeholder="Org's website URL (e.g. example.org) — optional but recommended" />
+            <button type="submit">Run readiness assessment</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  {% elif results is not none %}
+    <div class="card"><p>No matches found. Try a broader search term.</p></div>
+  {% endif %}
+{% endblock %}
