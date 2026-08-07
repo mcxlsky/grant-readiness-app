@@ -3,38 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grant Readiness & Prospecting — Prototype</title>
+  <title>Ready Set Grants</title>
   <link rel="stylesheet" href="/style.css" />
-  <style>
-    .spinner {
-      display: inline-block;
-      width: 18px; height: 18px;
-      border: 2.5px solid rgba(255,255,255,.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin .6s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .hidden { display: none !important; }
-    button:disabled { opacity: .65; cursor: wait; }
-  </style>
 </head>
 <body>
   <header class="top">
-    <h1>Grant Readiness &amp; Prospecting — Prototype</h1>
-    <p>Live 990 data (ProPublica) + a real scan of the org's website. Working prototype — not for production use.</p>
+    <h1>Ready Set Grants</h1>
+    <p>Live 990 data + website scan. Working prototype.</p>
   </header>
 
   <main>
-    <!-- Search section -->
     <div id="search-section">
       <div class="card">
         <h2>Find an organization</h2>
         <form class="search-form" id="search-form">
           <input type="text" id="q" name="q" placeholder='Organization name, e.g. "Teach For America"' required />
-          <input type="text" id="state" name="state" class="state" placeholder="STATE" maxlength="2" />
+          <input type="text" id="state" name="state" class="state" placeholder="ST" maxlength="2" />
           <button type="submit" id="search-btn">Search</button>
         </form>
         <p class="note">Searches live IRS/ProPublica records by organization name. State is optional (2-letter code).</p>
@@ -43,7 +27,6 @@
       <div id="results-container"></div>
     </div>
 
-    <!-- Analysis results section -->
     <div id="analysis-section" class="hidden"></div>
   </main>
 
@@ -61,10 +44,23 @@ function hide(el) { el.classList.add("hidden"); }
 function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 
 function tierColor(tier) {
-  if (tier === "Grant-Ready") return "#2e7d5b";
-  if (tier === "Ready with Gaps") return "#3f7d9e";
-  if (tier === "Needs Work") return "#b8860b";
-  return "#b3432b";
+  if (tier === "Grant-Ready") return "linear-gradient(135deg, #1a9a5a, #15804a)";
+  if (tier === "Ready with Gaps") return "linear-gradient(135deg, #5e5ce6, #4845c7)";
+  if (tier === "Needs Work") return "linear-gradient(135deg, #d4880b, #b87208)";
+  return "linear-gradient(135deg, #d93636, #b82a2a)";
+}
+
+function tierSolid(tier) {
+  if (tier === "Grant-Ready") return "#1a9a5a";
+  if (tier === "Ready with Gaps") return "#5e5ce6";
+  if (tier === "Needs Work") return "#c47a09";
+  return "#d93636";
+}
+
+function barGradient(key) {
+  if (key === "financial") return "linear-gradient(90deg, #5e5ce6, #7a79ef)";
+  if (key === "compliance") return "linear-gradient(90deg, #3b7de0, #5c9af0)";
+  return "linear-gradient(90deg, #d4880b, #e9a83a)";
 }
 
 /* ── Search ───────────────────────────────────────────────── */
@@ -85,36 +81,32 @@ $("#search-form").addEventListener("submit", async (e) => {
     const resp = await fetch(url);
     const data = await resp.json();
 
-    if (data.error) {
-      showError(data.error);
-      return;
-    }
+    if (data.error) { showError(data.error); return; }
 
     const orgs = data.organizations || [];
     if (!orgs.length) {
-      $("#results-container").innerHTML = '<div class="card"><p>No matches found. Try a broader search term.</p></div>';
+      $("#results-container").innerHTML = '<div class="card"><p style="color:var(--text-secondary)">No matches found. Try a broader search term.</p></div>';
       return;
     }
 
-    let html = `<div class="card"><h2>${orgs.length} result${orgs.length !== 1 ? "s" : ""} for &quot;${esc(q)}&quot;</h2>`;
+    let html = `<div class="card"><h2>${orgs.length} result${orgs.length !== 1 ? "s" : ""} for "${esc(q)}"</h2>`;
     for (const org of orgs) {
       html += `
         <div class="result-row">
           <div class="org-name">${esc(org.name)}</div>
           <div class="org-meta">
-            EIN ${esc(org.strein)} &middot; ${esc(org.city)}, ${esc(org.state)}
-            ${org.ntee_code ? ` &middot; NTEE ${esc(org.ntee_code)}` : ""}
+            EIN ${esc(org.strein)} · ${esc(org.city)}, ${esc(org.state)}
+            ${org.ntee_code ? ` · NTEE ${esc(org.ntee_code)}` : ""}
           </div>
           <form class="analyze-form" data-ein="${org.ein}">
-            <input type="text" name="website" placeholder="Org's website URL (e.g. example.org) — optional but recommended" />
-            <button type="submit">Run readiness assessment</button>
+            <input type="text" name="website" placeholder="Website URL (optional but recommended)" />
+            <button type="submit">Analyze</button>
           </form>
         </div>`;
     }
     html += "</div>";
     $("#results-container").innerHTML = html;
 
-    // Bind analyze forms
     document.querySelectorAll(".analyze-form").forEach((form) => {
       form.addEventListener("submit", (ev) => {
         ev.preventDefault();
@@ -152,13 +144,14 @@ async function runAnalysis(ein, website, btn) {
     showError("Analysis failed: " + err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "Run readiness assessment";
+    btn.textContent = "Analyze";
   }
 }
 
 function renderAnalysis(data) {
   const { org, readiness, funders, planText, siteScan, websiteUrl } = data;
-  const color = tierColor(readiness.tier);
+  const gradient = tierColor(readiness.tier);
+  const solid = tierSolid(readiness.tier);
 
   function checkList(checks) {
     return checks.map(([label, passed, weight]) => {
@@ -167,60 +160,60 @@ function renderAnalysis(data) {
     }).join("");
   }
 
-  function barRow(title, section, barColor) {
+  function barRow(title, section, key) {
     return `
       <div class="bar-row">
         <div class="label"><span>${title}</span><span>${section.score}/100</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:${section.score}%; background:${barColor};"></div></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${section.score}%; background:${barGradient(key)};"></div></div>
         <ul class="check-list">${checkList(section.checks)}</ul>
       </div>`;
   }
 
   const html = `
-    <a class="back-link" href="#" id="back-link">&larr; New search</a>
+    <a class="back-link" href="#" id="back-link">← New search</a>
 
     <div class="card">
-      <h2>${esc(org.name)}</h2>
-      <p class="org-meta">
-        EIN ${esc(String(org.ein))} &middot; ${esc(org.address || "")}, ${esc(org.city || "")}, ${esc(org.state || "")} ${esc(org.zipcode || "")}
-        ${org.ntee_code ? ` &middot; NTEE ${esc(org.ntee_code)}` : ""}
-        ${org.ruling_date ? ` &middot; IRS-recognized since ${String(org.ruling_date).slice(0, 4)}` : ""}
+      <h2>Organization</h2>
+      <div class="org-name" style="font-size:20px;margin-bottom:4px;">${esc(org.name)}</div>
+      <p class="org-meta" style="margin-bottom:0;">
+        EIN ${esc(String(org.ein))} · ${esc(org.address || "")}, ${esc(org.city || "")}, ${esc(org.state || "")} ${esc(org.zipcode || "")}
+        ${org.ntee_code ? ` · NTEE ${esc(org.ntee_code)}` : ""}
+        ${org.ruling_date ? ` · Since ${String(org.ruling_date).slice(0, 4)}` : ""}
       </p>
-      <div class="score-hero" style="margin-top:18px;">
-        <div class="score-circle" style="background:${color};">${readiness.overall}</div>
+      <div class="score-hero">
+        <div class="score-circle" style="background:${gradient};">${readiness.overall}</div>
         <div>
-          <span class="tier-badge" style="background:${color};">${esc(readiness.tier)}</span>
-          <div class="note" style="margin-top:4px;">
-            Weighted: financial health ${Math.round(readiness.weights.financial * 100)}%,
-            filing compliance ${Math.round(readiness.weights.compliance * 100)}%,
-            digital housekeeping ${Math.round(readiness.weights.digital * 100)}%
+          <span class="tier-badge" style="background:${solid};">${esc(readiness.tier)}</span>
+          <div class="note" style="margin-top:6px;">
+            Financial ${Math.round(readiness.weights.financial * 100)}% ·
+            Compliance ${Math.round(readiness.weights.compliance * 100)}% ·
+            Digital ${Math.round(readiness.weights.digital * 100)}%
           </div>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Score breakdown</h2>
-      ${barRow("Financial health", readiness.financial, "#1f4e5f")}
-      ${barRow("Filing compliance", readiness.compliance, "#3f7d9e")}
-      ${barRow("Digital housekeeping", readiness.digital, "#b8860b")}
-      ${!websiteUrl ? '<p class="note">No website URL was provided, so this score reflects that gap alone. Re-run with a URL for a full picture.</p>' : ""}
-      ${websiteUrl && siteScan && siteScan.pages_checked ? `<p class="note">Pages checked: ${siteScan.pages_checked.map(esc).join(", ")}</p>` : ""}
+      <h2>Score Breakdown</h2>
+      ${barRow("Financial Health", readiness.financial, "financial")}
+      ${barRow("Filing Compliance", readiness.compliance, "compliance")}
+      ${barRow("Digital Housekeeping", readiness.digital, "digital")}
+      ${!websiteUrl ? '<p class="note">No website URL was provided — digital score reflects that gap alone.</p>' : ""}
+      ${websiteUrl && siteScan && siteScan.pages_checked ? `<p class="note">Scanned: ${siteScan.pages_checked.map(esc).join(", ")}</p>` : ""}
     </div>
 
     <div class="card">
-      <h2>Generated strategic plan</h2>
-      <p class="note">Generated directly from the score above — no export or copy-paste into another tool.</p>
+      <h2>Strategic Plan</h2>
       <pre class="plan">${esc(planText)}</pre>
     </div>
 
     <div class="card">
-      <h2>Illustrative funder shortlist</h2>
-      <p class="note">Placeholder cause-area match, not a full funder database.</p>
+      <h2>Funder Shortlist</h2>
+      <p class="note" style="margin-top:0;margin-bottom:12px;">Cause-area match from a placeholder seed list.</p>
       ${funders.map((f) => `
         <div class="funder-row">
           <strong>${esc(f.name)}</strong> — ${esc(f.focus)}
-          ${f.url ? ` &middot; <a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.url)}</a>` : ""}
+          ${f.url ? ` · <a href="${esc(f.url)}" target="_blank" rel="noopener">${new URL(f.url).hostname}</a>` : ""}
         </div>`).join("")}
     </div>`;
 
@@ -235,7 +228,7 @@ function renderAnalysis(data) {
     show($("#search-section"));
   });
 
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 </script>
 </body>
