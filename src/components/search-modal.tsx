@@ -187,31 +187,30 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
-                        EIN
-                      </label>
-                      <input
-                        type="text"
-                        value={ein}
-                        onChange={(e) => setEin(e.target.value)}
-                        placeholder="XX-XXXXXXX"
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
-                        Website
-                      </label>
-                      <input
-                        type="text"
-                        value={website}
-                        onChange={(e) => setWebsite(e.target.value)}
-                        placeholder="https://"
-                        className={inputClass}
-                      />
-                    </div>
+                  <div>
+                    <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
+                      EIN
+                    </label>
+                    <input
+                      type="text"
+                      value={ein}
+                      onChange={(e) => setEin(e.target.value)}
+                      placeholder="XX-XXXXXXX"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
+                      Website
+                    </label>
+                    <input
+                      type="text"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      placeholder="https://"
+                      className={inputClass}
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -244,31 +243,30 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
-                        Contact Name
-                      </label>
-                      <input
-                        type="text"
-                        value={contactName}
-                        onChange={(e) => setContactName(e.target.value)}
-                        placeholder="Primary contact"
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
-                        Contact Email
-                      </label>
-                      <input
-                        type="email"
-                        value={contactEmail}
-                        onChange={(e) => setContactEmail(e.target.value)}
-                        placeholder="email@org.com"
-                        className={inputClass}
-                      />
-                    </div>
+                  <div>
+                    <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
+                      Contact Name
+                    </label>
+                    <input
+                      type="text"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      placeholder="Primary contact"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-[11px] font-medium text-gray-500 dark:text-neutral-400">
+                      Contact Email
+                    </label>
+                    <input
+                      type="email"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="email@org.com"
+                      className={inputClass}
+                    />
                   </div>
 
                   <div>
