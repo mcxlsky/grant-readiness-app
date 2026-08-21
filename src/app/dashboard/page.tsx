@@ -33,7 +33,7 @@ export default function Home() {
   const [applications, setApplications] = useState<GrantApplication[]>([]);
   const [activeEin, setActiveEin] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [view, setView] = useState<View>("orgs");
+  const [view, setView] = useState<View>("inbox");
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {

@@ -98,27 +98,20 @@ export function MobileTabBar({
   view,
   onSwitchView,
   newAppCount,
-  grantCount,
-  orgCount,
 }: {
   view: View;
   onSwitchView: (v: View) => void;
   newAppCount: number;
-  grantCount: number;
-  orgCount: number;
+  grantCount?: number;
+  orgCount?: number;
 }) {
-  const counts: Record<View, number | undefined> = {
-    orgs: orgCount || undefined,
-    inbox: newAppCount || undefined,
-    grants: grantCount || undefined,
-  };
-
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-gray-200 bg-white/95 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95 md:hidden">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const active = view === item.key;
-        const count = counts[item.key];
+        // Only show badge on Inbox
+        const count = item.key === "inbox" && newAppCount ? newAppCount : undefined;
         return (
           <button
             key={item.key}
