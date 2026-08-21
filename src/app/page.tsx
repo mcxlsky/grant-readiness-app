@@ -14,6 +14,12 @@ export default function LandingPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // If navigated here intentionally (logo click), show the role chooser
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("choose")) {
+      setReady(true);
+      return;
+    }
     // If already signed in and not explicitly signed out, redirect
     const admin = localStorage.getItem("rsg_admin");
     if (admin) {

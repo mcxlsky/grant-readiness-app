@@ -192,12 +192,15 @@ export default function Home() {
     >
       {/* Full-width top nav */}
       <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
-        <div className="flex items-center gap-2">
+        <a
+          href="/?choose=1"
+          className="flex cursor-pointer items-center gap-2"
+        >
           <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
           <span className="text-sm font-semibold text-gray-900 dark:text-white">
             Ready Set Grants
           </span>
-        </div>
+        </a>
         <ProfileDropdown theme={theme} onToggleTheme={toggleTheme} adminName={adminName} />
       </div>
 

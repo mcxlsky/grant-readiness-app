@@ -165,6 +165,13 @@ export default function ApplyPage() {
           transition={{ duration: 0.3 }}
           className="mb-10"
         >
+          <Link
+            href="/"
+            className="mb-4 inline-flex items-center gap-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+          >
+            <IconArrowLeft className="h-3.5 w-3.5" />
+            <span className="text-xs font-medium">Back</span>
+          </Link>
           <div className="mb-4 flex items-center gap-2">
             <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
             <span className="text-sm font-semibold text-gray-900 dark:text-white">

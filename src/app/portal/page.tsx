@@ -310,12 +310,12 @@ function PortalContent() {
     <div className="flex h-screen w-full flex-col overflow-hidden bg-gray-50 dark:bg-neutral-950">
       {/* Top nav */}
       <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <a href="/?choose=1" className="flex items-center gap-2">
           <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
           <span className="text-sm font-semibold text-gray-900 dark:text-white">
             Ready Set Grants
           </span>
-        </Link>
+        </a>
         <div className="flex items-center gap-2.5">
           <div className="hidden text-right md:block">
             <div className="text-xs font-medium text-gray-800 dark:text-neutral-200">

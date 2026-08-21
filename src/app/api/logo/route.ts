@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Proxy logo images for org avatars.
- * Tries Clearbit Logo API first, then Google Favicons, then returns a 404.
+ * Tries multiple sources in order of logo quality:
+ *   1. Clearbit Logo API (high-res, but may not have all orgs)
+ *   2. org's actual /favicon.ico or apple-touch-icon
+ *   3. Google Favicons (reliable fallback)
  * Caches successful responses for 7 days.
  */
 export async function GET(req: NextRequest) {
@@ -14,6 +17,8 @@ export async function GET(req: NextRequest) {
   // Sources to try, in order of quality
   const sources = [
     `https://logo.clearbit.com/${domain}?size=128`,
+    `https://${domain}/apple-touch-icon.png`,
+    `https://${domain}/apple-touch-icon-precomposed.png`,
     `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
   ];
 
@@ -22,6 +27,7 @@ export async function GET(req: NextRequest) {
       const resp = await fetch(url, {
         signal: AbortSignal.timeout(4000),
         headers: { "User-Agent": "ReadySetGrants/1.0" },
+        redirect: "follow",
       });
 
       if (!resp.ok) continue;
@@ -31,8 +37,8 @@ export async function GET(req: NextRequest) {
 
       const buffer = await resp.arrayBuffer();
 
-      // Skip tiny responses (likely placeholder/error images)
-      if (buffer.byteLength < 100) continue;
+      // Skip tiny responses (likely placeholder/error images or 1x1 pixels)
+      if (buffer.byteLength < 200) continue;
 
       return new NextResponse(buffer, {
         status: 200,

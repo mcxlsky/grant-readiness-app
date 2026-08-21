@@ -19,8 +19,8 @@ interface AppSidebarProps {
 }
 
 const NAV_ITEMS: { key: View; label: string; icon: typeof IconBuilding }[] = [
-  { key: "orgs", label: "Orgs", icon: IconBuilding },
   { key: "inbox", label: "Inbox", icon: IconInbox },
+  { key: "orgs", label: "Orgs", icon: IconBuilding },
   { key: "grants", label: "Grants", icon: IconCoin },
 ];
 
