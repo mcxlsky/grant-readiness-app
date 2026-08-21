@@ -127,6 +127,9 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
   const inputClass =
     "w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-base md:text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500";
 
+  const selectClass =
+    "w-full rounded-lg border border-gray-300 bg-gray-50 pl-3 pr-8 py-2 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white";
+
   return (
     <AnimatePresence>
       {open && (
@@ -233,7 +236,7 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                       <select
                         value={formState}
                         onChange={(e) => setFormState(e.target.value)}
-                        className={inputClass}
+                        className={selectClass}
                       >
                         <option value="">Select</option>
                         {US_STATES.map((s) => (
@@ -323,7 +326,7 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                       <select
                         value={searchState}
                         onChange={(e) => setSearchState(e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 px-3 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                        className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-3 pr-8 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                       >
                         <option value="">State</option>
                         {US_STATES.map((s) => (
