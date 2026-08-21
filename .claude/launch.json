@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "netlify-dev",
-      "runtimeExecutable": "netlify",
-      "runtimeArgs": ["dev", "--port", "8888"],
-      "port": 8888
+      "name": "next-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "-p", "3000"],
+      "port": 3000
     }
   ]
 }

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ready Set Grants</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Ready Set Grants</h1>
+      <p>Grant readiness consultant</p>
+    </div>
+    <div class="sidebar-actions">
+      <button class="btn-add-org" id="btn-open-search">+ Add Organization</button>
+    </div>
+    <nav class="sidebar-portfolio" id="sidebar-portfolio"></nav>
+  </aside>
+
+  <!-- ── Main area ───────────────────────────────────────── -->
+  <div class="main-area">
+    <div class="main-content" id="main-content"></div>
+    <footer class="disclaimer">
+      Financial and filing data sourced live from the ProPublica Nonprofit Explorer API (IRS Form 990 data).
+      Website housekeeping signals come from a live scan of the org's own site. Grant matches are illustrative
+      (placeholder seed data). This is a working prototype, not a finished product.
+    </footer>
+  </div>
+
+  <!-- ── Search modal ────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="search-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add an organization</h2>
+        <form class="modal-search-form" id="modal-search-form">
+          <input type="text" id="modal-q" placeholder='Search by name, e.g. "Teach For America"' required />
+          <input type="text" id="modal-state" class="state-input" placeholder="ST" maxlength="2" />
+          <button type="submit" id="modal-search-btn">Search</button>
+        </form>
+        <p class="modal-note">Searches live IRS/ProPublica records. State is optional (2-letter code).</p>
+      </div>
+      <div class="modal-body">
+        <div id="modal-error" class="error-box hidden"></div>
+        <div id="modal-results" class="modal-results"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Ready Set Grants — Portfolio Dashboard
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Constants ───────────────────────────────────────────────── */
+const STAGES = [
+  { key: "intake",    label: "Intake",         icon: "📥" },
+  { key: "assessed",  label: "Assessed",       icon: "🔍" },
+  { key: "fixing",    label: "Fixing Gaps",    icon: "🔧" },
+  { key: "ready",     label: "Outreach Ready", icon: "✅" },
+];
+
+const STORAGE_KEY = "rsg_portfolio";
+
+/* ── Helpers ─────────────────────────────────────────────────── */
+function $(sel) { return document.querySelector(sel); }
+function show(el) { el.classList.remove("hidden"); }
+function hide(el) { el.classList.add("hidden"); }
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+function fmt$(n) {
+  if (n >= 1e6) return "$" + (n/1e6).toFixed(1) + "M";
+  if (n >= 1e3) return "$" + Math.round(n/1e3) + "K";
+  return "$" + n;
+}
+
+function tierColor(tier) {
+  if (tier === "Grant-Ready") return "#1a9a5a";
+  if (tier === "Ready with Gaps") return "#5e5ce6";
+  if (tier === "Needs Work") return "#c47a09";
+  return "#d93636";
+}
+
+function matchColor(pct) {
+  if (pct >= 80) return "#1a9a5a";
+  if (pct >= 60) return "#5e5ce6";
+  if (pct >= 40) return "#c47a09";
+  return "#d93636";
+}
+
+function barGradient(key) {
+  if (key === "financial") return "linear-gradient(90deg, #5e5ce6, #7a79ef)";
+  if (key === "compliance") return "linear-gradient(90deg, #3b7de0, #5c9af0)";
+  return "linear-gradient(90deg, #d4880b, #e9a83a)";
+}
+
+/* ── Portfolio persistence ───────────────────────────────────── */
+function loadPortfolio() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function savePortfolio(portfolio) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolio));
+}
+
+function addOrg(org) {
+  const portfolio = loadPortfolio();
+  if (portfolio.find(o => o.ein === org.ein)) return false;
+  portfolio.push({
+    ein: org.ein,
+    strein: org.strein || String(org.ein),
+    name: org.name,
+    city: org.city || "",
+    state: org.state || "",
+    ntee_code: org.ntee_code || "",
+    stage: "intake",
+    addedAt: Date.now(),
+    analysisData: null,
+  });
+  savePortfolio(portfolio);
+  return true;
+}
+
+function removeOrg(ein) {
+  let portfolio = loadPortfolio();
+  portfolio = portfolio.filter(o => o.ein !== ein);
+  savePortfolio(portfolio);
+}
+
+function updateOrgAnalysis(ein, data) {
+  const portfolio = loadPortfolio();
+  const org = portfolio.find(o => o.ein === ein);
+  if (!org) return;
+  org.analysisData = data;
+  org.stage = "assessed";
+  org.analyzedAt = Date.now();
+  savePortfolio(portfolio);
+}
+
+function updateOrgStage(ein, stage) {
+  const portfolio = loadPortfolio();
+  const org = portfolio.find(o => o.ein === ein);
+  if (!org) return;
+  org.stage = stage;
+  savePortfolio(portfolio);
+}
+
+function getOrg(ein) {
+  return loadPortfolio().find(o => o.ein === ein) || null;
+}
+
+/* ── State ───────────────────────────────────────────────────── */
+let activeEin = null;
+
+/* ── Sidebar rendering ───────────────────────────────────────── */
+function renderSidebar() {
+  const portfolio = loadPortfolio();
+  const container = $("#sidebar-portfolio");
+
+  if (!portfolio.length) {
+    container.innerHTML = `
+      <div class="stage-empty" style="padding: 20px; text-align: center;">
+        <p style="color:var(--text-tertiary); font-size: 12px;">
+          No organizations yet.<br />Click "Add Organization" to start.
+        </p>
+      </div>`;
+    return;
+  }
+
+  let html = "";
+  for (const stage of STAGES) {
+    const orgs = portfolio.filter(o => o.stage === stage.key);
+    html += `<div class="stage-group">`;
+    html += `<div class="stage-header">
+      <span class="stage-icon">${stage.icon}</span>
+      ${esc(stage.label)}
+      ${orgs.length ? `<span class="stage-count">${orgs.length}</span>` : ""}
+    </div>`;
+
+    if (!orgs.length) {
+      html += `<div class="stage-empty">No orgs</div>`;
+    } else {
+      for (const org of orgs) {
+        const isActive = org.ein === activeEin;
+        const score = org.analysisData?.readiness?.overall;
+        const tier = org.analysisData?.readiness?.tier;
+        const color = tier ? tierColor(tier) : "var(--text-tertiary)";
+
+        html += `
+          <div class="portfolio-item ${isActive ? "active" : ""}" data-ein="${org.ein}">
+            <div class="portfolio-item-info" data-ein="${org.ein}">
+              <div class="portfolio-item-name">${esc(org.name)}</div>
+              <div class="portfolio-item-meta">${esc(org.city)}${org.city && org.state ? ", " : ""}${esc(org.state)}${org.ntee_code ? " · " + esc(org.ntee_code) : ""}</div>
+            </div>
+            ${score != null ? `<span class="portfolio-score" style="color:${color}">${score}</span>` : ""}
+            ${tier ? `<span class="portfolio-tier-badge" style="background:${color}" title="${esc(tier)}"></span>` : ""}
+            <div class="portfolio-item-actions">
+              <button class="btn-remove-org" data-ein="${org.ein}" title="Remove">×</button>
+            </div>
+          </div>`;
+      }
+    }
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+
+  // Bind clicks
+  container.querySelectorAll(".portfolio-item-info").forEach(el => {
+    el.addEventListener("click", () => selectOrg(parseInt(el.dataset.ein)));
+  });
+  container.querySelectorAll(".btn-remove-org").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const ein = parseInt(el.dataset.ein);
+      removeOrg(ein);
+      if (activeEin === ein) { activeEin = null; renderMain(); }
+      renderSidebar();
+    });
+  });
+}
+
+/* ── Main content rendering ──────────────────────────────────── */
+function selectOrg(ein) {
+  activeEin = ein;
+  renderSidebar();
+  renderMain();
+}
+
+function renderMain() {
+  const container = $("#main-content");
+
+  if (!activeEin) {
+    renderWelcome(container);
+    return;
+  }
+
+  const org = getOrg(activeEin);
+  if (!org) {
+    activeEin = null;
+    renderWelcome(container);
+    return;
+  }
+
+  if (org.stage === "intake" || !org.analysisData) {
+    renderIntake(container, org);
+  } else {
+    renderDashboard(container, org);
+  }
+}
+
+function renderWelcome(container) {
+  const portfolio = loadPortfolio();
+  container.innerHTML = `
+    <div class="welcome-state">
+      <div class="welcome-icon">📋</div>
+      <h2>${portfolio.length ? "Select an organization" : "Welcome to Ready Set Grants"}</h2>
+      <p>${portfolio.length
+        ? "Choose an organization from the sidebar, or add a new one to get started."
+        : "Search for nonprofits, assess their grant readiness, and track them through your pipeline."
+      }</p>
+      <button class="btn-add-org" onclick="openSearchModal()">+ Add Organization</button>
+    </div>`;
+}
+
+function renderIntake(container, org) {
+  container.innerHTML = `
+    <div class="intake-state">
+      <div class="intake-header">
+        <div class="intake-org-name">${esc(org.name)}</div>
+        <div class="intake-meta">
+          EIN ${esc(org.strein)} · ${esc(org.city)}${org.city && org.state ? ", " : ""}${esc(org.state)}
+          ${org.ntee_code ? ` · NTEE ${esc(org.ntee_code)}` : ""}
+        </div>
+      </div>
+      <div class="intake-card">
+        <h3>Run Grant Readiness Assessment</h3>
+        <p>We'll pull live IRS 990 data and scan the org's website for grant-readiness signals.</p>
+        <form class="intake-form" id="intake-form">
+          <input type="text" name="website" placeholder="Website URL (recommended)" />
+          <button type="submit" id="intake-btn">Analyze</button>
+        </form>
+      </div>
+    </div>`;
+
+  $("#intake-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const website = $("#intake-form").querySelector("input").value.trim();
+    runAnalysis(org.ein, website, $("#intake-btn"));
+  });
+}
+
+/* ── Dashboard renderer ──────────────────────────────────────── */
+function renderDashboard(container, orgEntry) {
+  const { org: orgData, readiness, grantMatches, actionItems, siteScan, websiteUrl } = orgEntry.analysisData;
+  const org = orgData;
+  const color = tierColor(readiness.tier);
+  const eligible = grantMatches.filter(m => m.eligible);
+  const topBlockers = actionItems.filter(a => a.priority === "high");
+
+  function checkList(checks) {
+    return checks.map(([label, passed, weight]) => {
+      const cls = passed ? "pass" : (weight === 0 && !passed ? "neutral" : "fail");
+      return `<li class="${cls}">${esc(label)}</li>`;
+    }).join("");
+  }
+
+  function barRow(title, section, key) {
+    return `
+      <div class="bar-row">
+        <div class="label"><span>${title}</span><span>${section.score}/100</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${section.score}%; background:${barGradient(key)};"></div></div>
+        <ul class="check-list">${checkList(section.checks)}</ul>
+      </div>`;
+  }
+
+  /* ── Stage selector ── */
+  const currentStage = orgEntry.stage;
+  let stageOptions = STAGES.map(s =>
+    `<option value="${s.key}" ${s.key === currentStage ? "selected" : ""}>${s.icon} ${s.label}</option>`
+  ).join("");
+
+  const stageSelector = `
+    <div class="stage-selector">
+      <label>Stage:</label>
+      <select id="stage-select">${stageOptions}</select>
+    </div>`;
+
+  /* ── Stat tiles ── */
+  const statTiles = `
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <div class="stat-value" style="color:${color}">${readiness.overall}</div>
+        <div class="stat-label">Readiness Score</div>
+        <div class="stat-sub">${esc(readiness.tier)}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">${eligible.length}</div>
+        <div class="stat-label">Grant Matches</div>
+        <div class="stat-sub">${grantMatches.length} total evaluated</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">${topBlockers.length}</div>
+        <div class="stat-label">High-Priority Fixes</div>
+        <div class="stat-sub">${actionItems.length} total actions</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">${eligible.length ? fmt$(eligible.reduce((s,m) => s + m.avg_grant, 0) / eligible.length) : "—"}</div>
+        <div class="stat-label">Avg Grant Size</div>
+        <div class="stat-sub">across matched funders</div>
+      </div>
+    </div>`;
+
+  /* ── Grant match cards ── */
+  let grantCards = "";
+  if (grantMatches.length) {
+    grantCards = grantMatches.map(m => `
+      <div class="grant-card ${m.eligible ? "" : "ineligible"}">
+        <div class="grant-header">
+          <div>
+            <div class="grant-name">${esc(m.name)}</div>
+            <div class="grant-type">${esc(m.type)} · ${esc(m.focus)}</div>
+          </div>
+          <div class="match-badge" style="background:${matchColor(m.match_pct)}">${m.match_pct}%</div>
+        </div>
+        <div class="grant-details">
+          <div class="grant-detail"><span class="detail-label">Grant range</span><span>${fmt$(m.grant_range[0])} – ${fmt$(m.grant_range[1])}</span></div>
+          <div class="grant-detail"><span class="detail-label">Avg award</span><span>${fmt$(m.avg_grant)}</span></div>
+          <div class="grant-detail"><span class="detail-label">Deadline</span><span>${esc(m.deadline)}</span></div>
+        </div>
+        ${m.fits.length ? `<div class="grant-fits">${m.fits.map(f => `<span class="fit-tag">✓ ${esc(f)}</span>`).join("")}</div>` : ""}
+        ${m.blockers.length ? `<div class="grant-blockers">${m.blockers.map(b => `<span class="blocker-tag">✕ ${esc(b)}</span>`).join("")}</div>` : ""}
+        <div class="grant-footer">
+          <a href="${esc(m.url)}" target="_blank" rel="noopener">${new URL(m.url).hostname} →</a>
+          ${!m.eligible ? '<span class="ineligible-badge">May not meet requirements</span>' : ""}
+        </div>
+      </div>`).join("");
+  } else {
+    grantCards = '<p style="color:var(--text-secondary)">No matching funders found for this cause area.</p>';
+  }
+
+  /* ── Action items ── */
+  let actionList = "";
+  if (actionItems.length) {
+    actionList = actionItems.map(a => `
+      <div class="action-row">
+        <div class="action-priority priority-${a.priority}"></div>
+        <div class="action-text">${esc(a.action)}</div>
+        ${a.unlocks > 0 ? `<div class="action-unlocks">+${a.unlocks} grant${a.unlocks !== 1 ? "s" : ""}</div>` : ""}
+      </div>`).join("");
+  } else {
+    actionList = '<p style="color:var(--text-secondary)">No blockers found — you\'re in good shape.</p>';
+  }
+
+  /* ── Assemble ── */
+  container.innerHTML = `
+    <div class="dash-header">
+      <div>
+        <div class="dash-org-name">${esc(org.name)}</div>
+        <div class="org-meta">
+          EIN ${esc(String(org.ein))} · ${esc(org.city || "")}, ${esc(org.state || "")}
+          ${org.ntee_code ? ` · NTEE ${esc(org.ntee_code)}` : ""}
+          ${org.ruling_date ? ` · Since ${String(org.ruling_date).slice(0, 4)}` : ""}
+        </div>
+        ${stageSelector}
+      </div>
+    </div>
+
+    ${statTiles}
+
+    ${actionItems.length ? `
+    <div class="card">
+      <h2>Action Items</h2>
+      <p class="note" style="margin-top:0;margin-bottom:12px;">Fix these to strengthen your grant applications and unlock more matches.</p>
+      ${actionList}
+    </div>` : ""}
+
+    <div class="card">
+      <h2>Grant Opportunities <span class="count-badge">${grantMatches.length}</span></h2>
+      <p class="note" style="margin-top:0;margin-bottom:16px;">Matched by cause area. Sorted by compatibility with your organization.</p>
+      ${grantCards}
+    </div>
+
+    <div class="card collapsible" id="readiness-card">
+      <h2 class="collapsible-header" onclick="toggleSection('readiness-card')">
+        Readiness Details
+        <span class="collapse-icon">▸</span>
+      </h2>
+      <div class="collapsible-body">
+        ${barRow("Financial Health", readiness.financial, "financial")}
+        ${barRow("Filing Compliance", readiness.compliance, "compliance")}
+        ${barRow("Digital Housekeeping", readiness.digital, "digital")}
+        ${!websiteUrl ? '<p class="note">No website URL was provided — digital score reflects that gap alone.</p>' : ""}
+        ${websiteUrl && siteScan && siteScan.pages_checked ? `<p class="note">Scanned: ${siteScan.pages_checked.map(esc).join(", ")}</p>` : ""}
+      </div>
+    </div>`;
+
+  // Bind stage change
+  $("#stage-select").addEventListener("change", (e) => {
+    updateOrgStage(orgEntry.ein, e.target.value);
+    renderSidebar();
+  });
+
+  $(".main-area").scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ── Analysis ────────────────────────────────────────────────── */
+async function runAnalysis(ein, website, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analyzing…';
+
+  try {
+    const url = `/api/analyze?ein=${ein}${website ? `&website=${encodeURIComponent(website)}` : ""}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.error) { alert("Analysis failed: " + data.error); return; }
+
+    updateOrgAnalysis(ein, data);
+    renderSidebar();
+    renderMain();
+  } catch (err) {
+    alert("Analysis failed: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Analyze";
+  }
+}
+
+/* ── Search modal ────────────────────────────────────────────── */
+function openSearchModal() {
+  show($("#search-modal"));
+  $("#modal-q").value = "";
+  $("#modal-state").value = "";
+  $("#modal-results").innerHTML = "";
+  hide($("#modal-error"));
+  setTimeout(() => $("#modal-q").focus(), 100);
+}
+
+function closeSearchModal() {
+  hide($("#search-modal"));
+}
+
+$("#search-modal").addEventListener("click", (e) => {
+  if (e.target === $("#search-modal")) closeSearchModal();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeSearchModal();
+});
+
+$("#btn-open-search").addEventListener("click", openSearchModal);
+
+$("#modal-search-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const q = $("#modal-q").value.trim();
+  const state = $("#modal-state").value.trim().toUpperCase();
+  if (!q) return;
+
+  const btn = $("#modal-search-btn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Searching…';
+  hide($("#modal-error"));
+  $("#modal-results").innerHTML = "";
+
+  try {
+    const url = `/api/search?q=${encodeURIComponent(q)}${state ? `&state=${encodeURIComponent(state)}` : ""}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.error) {
+      showModalError(data.error);
+      return;
+    }
+
+    const orgs = data.organizations || [];
+    if (!orgs.length) {
+      $("#modal-results").innerHTML = '<p style="color:var(--text-tertiary); padding:8px 0; font-size:13px;">No matches found. Try a broader search term.</p>';
+      return;
+    }
+
+    const portfolio = loadPortfolio();
+    let html = "";
+    for (const org of orgs) {
+      const alreadyAdded = portfolio.some(o => o.ein === org.ein);
+      html += `
+        <div class="modal-result-row">
+          <div class="modal-result-info">
+            <div class="modal-result-name">${esc(org.name)}</div>
+            <div class="modal-result-meta">
+              EIN ${esc(org.strein)} · ${esc(org.city)}, ${esc(org.state)}
+              ${org.ntee_code ? ` · NTEE ${esc(org.ntee_code)}` : ""}
+            </div>
+          </div>
+          <button class="btn-add-to-portfolio ${alreadyAdded ? "already-added" : ""}"
+                  data-org='${JSON.stringify(org).replace(/'/g, "&#39;")}'
+                  ${alreadyAdded ? "disabled" : ""}>
+            ${alreadyAdded ? "Added" : "+ Add"}
+          </button>
+        </div>`;
+    }
+    $("#modal-results").innerHTML = html;
+
+    // Bind add buttons
+    $("#modal-results").querySelectorAll(".btn-add-to-portfolio:not(.already-added)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const org = JSON.parse(btn.dataset.org);
+        addOrg(org);
+        btn.textContent = "Added";
+        btn.classList.add("already-added");
+        btn.disabled = true;
+        renderSidebar();
+        // Auto-select the newly added org
+        selectOrg(org.ein);
+      });
+    });
+  } catch (err) {
+    showModalError("Search failed: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Search";
+  }
+});
+
+function showModalError(msg) {
+  const box = $("#modal-error");
+  box.textContent = msg;
+  show(box);
+}
+
+/* ── Collapsible ─────────────────────────────────────────────── */
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle("open");
+}
+
+/* ── Init ────────────────────────────────────────────────────── */
+renderSidebar();
+renderMain();
+</script>
+</body>
+</html>
