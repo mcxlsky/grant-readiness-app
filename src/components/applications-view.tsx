@@ -118,17 +118,21 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
                 className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
               >
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
-                    {app.orgName}
-                    {app.status === "new" && (
-                      <span className="shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                        New
-                      </span>
-                    )}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                      {app.orgName}
+                      {app.status === "new" && (
+                        <span className="shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                          New
+                        </span>
+                      )}
+                    </div>
+                    <span className="shrink-0 text-[11px] text-gray-400 dark:text-neutral-500">
+                      {relativeTime(app.submittedAt)}
+                    </span>
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-[11px] text-gray-400 dark:text-neutral-500">
-                    <span>{relativeTime(app.submittedAt)}</span>
-                    {app.amountRequested && <span>· {app.amountRequested}</span>}
+                    {app.amountRequested && <span>{app.amountRequested}</span>}
                   </div>
                   <div className="mt-1 text-xs text-gray-500 dark:text-neutral-500">
                     {app.projectTitle}
