@@ -9,4 +9,6 @@ venv/
 *.sqlite3
 .DS_Store
 node_modules/
+.next/
+next-env.d.ts
 .netlify/

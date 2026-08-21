@@ -1,16 +1,6 @@
 [build]
-  publish = "public"
-  functions = "netlify/functions"
+  command = "npm run build"
+  publish = ".next"
 
-[functions]
-  node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/api/search"
-  to = "/.netlify/functions/search"
-  status = 200
-
-[[redirects]]
-  from = "/api/analyze"
-  to = "/.netlify/functions/analyze"
-  status = 200
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
