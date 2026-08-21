@@ -118,19 +118,15 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
                 className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
               >
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
                     {app.orgName}
-                  </div>
-                  <div className="mt-1 flex items-center gap-2 text-[11px] text-gray-400 dark:text-neutral-500">
-                    {app.status === "new" ? (
+                    {app.status === "new" && (
                       <span className="shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
                         New
                       </span>
-                    ) : (
-                      <span className="font-medium" style={{ color: statusStyle(app.status).color }}>
-                        {statusStyle(app.status).label}
-                      </span>
                     )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-gray-400 dark:text-neutral-500">
                     <span>{relativeTime(app.submittedAt)}</span>
                     {app.amountRequested && <span>· {app.amountRequested}</span>}
                   </div>
