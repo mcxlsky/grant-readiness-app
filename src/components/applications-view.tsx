@@ -117,34 +117,25 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
                 onClick={() => handleOpen(app)}
                 className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                        {app.orgName}
-                      </span>
-                      {app.status === "new" && (
-                        <span className="shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                          New
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">
-                      {app.projectTitle}
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-gray-400 dark:text-neutral-600">
-                      <span>{app.contactName}</span>
-                      {app.amountRequested && <span>Requesting {app.amountRequested}</span>}
-                      {app.annualBudget && <span>Budget: {app.annualBudget}</span>}
-                    </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {app.orgName}
                   </div>
-                  <div className="shrink-0 text-right text-[11px] text-gray-400 dark:text-neutral-600">
-                    <div>{relativeTime(app.submittedAt)}</div>
-                    {app.lastViewedAt && (
-                      <div className="mt-0.5 text-[10px] text-gray-300 dark:text-neutral-700">
-                        Viewed {relativeTime(app.lastViewedAt)}
-                      </div>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-gray-400 dark:text-neutral-500">
+                    {app.status === "new" ? (
+                      <span className="shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                        New
+                      </span>
+                    ) : (
+                      <span className="font-medium" style={{ color: statusStyle(app.status).color }}>
+                        {statusStyle(app.status).label}
+                      </span>
                     )}
+                    <span>{relativeTime(app.submittedAt)}</span>
+                    {app.amountRequested && <span>· {app.amountRequested}</span>}
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500 dark:text-neutral-500">
+                    {app.projectTitle}
                   </div>
                 </div>
               </motion.div>
