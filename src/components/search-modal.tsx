@@ -306,38 +306,40 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
               /* ── IRS Search ── */
               <>
                 <div className="border-b border-gray-200 p-5 dark:border-neutral-800">
-                  <form onSubmit={handleSearch} className="flex gap-2">
+                  <form onSubmit={handleSearch} className="space-y-2 md:space-y-0 md:flex md:gap-2">
                     <div className="relative flex-1">
                       <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
                       <input
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder='Search by name, e.g. "Teach For America"'
+                        placeholder="Search by name"
                         className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-9 pr-3 text-base md:text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
                         autoFocus
                       />
                     </div>
-                    <div className="relative">
-                      <IconFilter className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
-                      <select
-                        value={searchState}
-                        onChange={(e) => setSearchState(e.target.value)}
-                        className="h-full w-[5.5rem] appearance-none rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-7 pr-2 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                    <div className="flex gap-2">
+                      <div className="relative flex-1 md:flex-none">
+                        <IconFilter className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
+                        <select
+                          value={searchState}
+                          onChange={(e) => setSearchState(e.target.value)}
+                          className="h-full w-full md:w-[5.5rem] appearance-none rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-7 pr-2 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                        >
+                          <option value="">State</option>
+                          {US_STATES.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="rounded-lg bg-indigo-600 px-5 py-2.5 text-base md:text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
                       >
-                        <option value="">State</option>
-                        {US_STATES.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
+                        {loading ? <span className="spinner" /> : "Search"}
+                      </button>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
-                    >
-                      {loading ? <span className="spinner" /> : "Search"}
-                    </button>
                   </form>
                   <p className="mt-2 text-[11px] text-gray-400 dark:text-neutral-500">
                     Searches live IRS/ProPublica records. State filter is optional.
