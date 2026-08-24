@@ -17,9 +17,10 @@ import {
   IconMessageCircle,
   IconHelpCircle,
   IconUser,
+  IconLogout,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { loadApplications, loadApplicationDocuments } from "@/lib/applications";
 import { loadPortfolio } from "@/lib/portfolio";
 import { formatFileSize, DOCUMENT_CATEGORIES } from "@/lib/file-utils";
@@ -149,6 +150,7 @@ export default function PortalPage() {
 
 function PortalContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [app, setApp] = useState<GrantApplication | null>(null);
   const [org, setOrg] = useState<PortfolioOrg | null>(null);
   const [loading, setLoading] = useState(true);
@@ -209,6 +211,10 @@ function PortalContent() {
     } else {
       setNotFound(true);
     }
+  };
+
+  const handleSignOut = () => {
+    router.push("/?choose=1");
   };
 
   if (loading) return null;
@@ -329,6 +335,14 @@ function PortalContent() {
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
             <IconUser className="h-4 w-4" />
           </div>
+          <button
+            onClick={handleSignOut}
+            className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-gray-400 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+            title="Sign out"
+          >
+            <IconLogout className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Sign out</span>
+          </button>
         </div>
       </div>
 
