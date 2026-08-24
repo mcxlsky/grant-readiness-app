@@ -20,9 +20,10 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { loadApplications } from "@/lib/applications";
+import { loadApplications, loadApplicationDocuments } from "@/lib/applications";
 import { loadPortfolio } from "@/lib/portfolio";
-import type { GrantApplication, AppStatus, PortfolioOrg } from "@/lib/types";
+import { formatFileSize, DOCUMENT_CATEGORIES } from "@/lib/file-utils";
+import type { GrantApplication, AppStatus, PortfolioOrg, UploadedFile } from "@/lib/types";
 import { Suspense } from "react";
 
 /* ── Status config ─────────────────────────────────────── */
@@ -252,11 +253,11 @@ function PortalContent() {
                   Try a different email
                 </button>
                 <Link
-                  href="/apply"
+                  href="/get-started"
                   className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
                 >
                   <IconFileText className="h-4 w-4" />
-                  Submit an Application
+                  Start Your Assessment
                 </Link>
               </div>
             </div>
@@ -290,8 +291,8 @@ function PortalContent() {
               <div className="text-center">
                 <p className="text-xs text-gray-400 dark:text-neutral-600">
                   Don&apos;t have an application yet?{" "}
-                  <Link href="/apply" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-                    Apply now
+                  <Link href="/get-started" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                    Get started
                   </Link>
                 </p>
               </div>
@@ -567,18 +568,23 @@ function OverviewPanel({ app, org }: { app: GrantApplication; org: PortfolioOrg 
 /* ── Documents panel (placeholder) ────────────────────── */
 
 function DocumentsPanel({ app }: { app: GrantApplication }) {
-  const documents = [
-    { name: "Program Intake Form", status: "submitted", date: app.submittedAt },
-  ];
+  const uploadedDocs: UploadedFile[] = loadApplicationDocuments(app.id);
 
   const requiredDocs = app.status === "approved"
     ? [
-        "IRS Determination Letter (501(c)(3))",
-        "Most recent audited financials",
-        "Board of Directors list",
-        "Organizational budget",
+        { label: "IRS Determination Letter (501(c)(3))", category: "irs_letter" },
+        { label: "Most recent audited financials", category: "990" },
+        { label: "Board of Directors list", category: "other" },
+        { label: "Organizational budget", category: "budget" },
       ]
     : [];
+
+  const handleDownload = (doc: UploadedFile) => {
+    const a = document.createElement("a");
+    a.href = doc.data;
+    a.download = doc.name;
+    a.click();
+  };
 
   return (
     <>
@@ -586,32 +592,65 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
         Documents
       </h1>
       <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
-        Application documents and required uploads.
+        Assessment documents and uploaded files.
       </p>
 
-      {/* Submitted documents */}
+      {/* Intake form (always present) */}
       <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
           Submitted
         </h3>
-        {documents.map((doc, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg py-2"
-          >
-            <IconFileText className="h-4 w-4 text-emerald-500" />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-gray-800 dark:text-neutral-200">{doc.name}</div>
-              <div className="text-xs text-gray-400 dark:text-neutral-500">
-                {new Date(doc.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              </div>
+        <div className="flex items-center gap-3 rounded-lg py-2">
+          <IconFileText className="h-4 w-4 text-emerald-500" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-gray-800 dark:text-neutral-200">Grant Readiness Assessment</div>
+            <div className="text-xs text-gray-400 dark:text-neutral-500">
+              {new Date(app.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
             </div>
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              Submitted
-            </span>
           </div>
-        ))}
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+            Submitted
+          </span>
+        </div>
       </div>
+
+      {/* Uploaded documents */}
+      {uploadedDocs.length > 0 && (
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+            Uploaded Documents
+          </h3>
+          <div className="space-y-2">
+            {uploadedDocs.map((doc) => {
+              const cat = DOCUMENT_CATEGORIES.find((c) => c.value === doc.category);
+              return (
+                <div
+                  key={doc.id}
+                  className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50"
+                >
+                  <IconFileText className="h-4 w-4 shrink-0 text-indigo-500" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-gray-800 dark:text-neutral-200">
+                      {doc.name}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500">
+                      <span>{formatFileSize(doc.size)}</span>
+                      <span>·</span>
+                      <span>{cat?.label || doc.category}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDownload(doc)}
+                    className="shrink-0 rounded px-2 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                  >
+                    Download
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Required documents */}
       {requiredDocs.length > 0 ? (
@@ -620,28 +659,36 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
             Required for Assessment
           </h3>
           <div className="space-y-2">
-            {requiredDocs.map((doc, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-lg py-2">
-                <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-neutral-600" />
-                <span className="flex-1 text-sm text-gray-700 dark:text-neutral-300">{doc}</span>
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
-                  Needed
-                </span>
-              </div>
-            ))}
+            {requiredDocs.map((doc, i) => {
+              const uploaded = uploadedDocs.some((u) => u.category === doc.category);
+              return (
+                <div key={i} className="flex items-center gap-3 rounded-lg py-2">
+                  {uploaded ? (
+                    <IconCheck className="h-4 w-4 text-emerald-500" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border-2 border-gray-300 dark:border-neutral-600" />
+                  )}
+                  <span className="flex-1 text-sm text-gray-700 dark:text-neutral-300">{doc.label}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    uploaded
+                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+                      : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                  }`}>
+                    {uploaded ? "Uploaded" : "Needed"}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          <p className="mt-4 text-xs text-gray-400 dark:text-neutral-500">
-            Document upload will be available soon. Your consultant will request these during your kickoff call.
-          </p>
         </div>
-      ) : (
+      ) : uploadedDocs.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
           <IconFolder className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
           <p className="text-sm text-gray-400 dark:text-neutral-500">
             No additional documents required at this stage.
           </p>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

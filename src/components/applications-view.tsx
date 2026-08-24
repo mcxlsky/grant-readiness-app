@@ -11,6 +11,7 @@ import {
   IconCopy,
   IconCircleDot,
   IconCheck,
+  IconFileText,
 } from "@tabler/icons-react";
 
 import {
@@ -18,8 +19,10 @@ import {
   updateApplicationNotes,
   deleteApplication,
   markApplicationViewed,
+  loadApplicationDocuments,
 } from "@/lib/applications";
 import { APP_STATUSES } from "@/lib/types";
+import { formatFileSize, DOCUMENT_CATEGORIES } from "@/lib/file-utils";
 import type { GrantApplication, AppStatus } from "@/lib/types";
 
 interface ApplicationsViewProps {
@@ -103,7 +106,7 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
             No applications yet. Share the application link with organizations.
           </p>
           <p className="mt-2 text-xs text-gray-400 dark:text-neutral-600">
-            Application form: <span className="font-mono text-indigo-600 dark:text-indigo-400">/apply</span>
+            Assessment form: <span className="font-mono text-indigo-600 dark:text-indigo-400">/get-started</span>
           </p>
         </div>
       ) : (
@@ -162,7 +165,7 @@ function CopyableLink() {
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
-    const url = `${window.location.origin}/apply`;
+    const url = `${window.location.origin}/get-started`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -173,7 +176,7 @@ function CopyableLink() {
       onClick={copy}
       className="inline-flex items-center gap-1 font-mono text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400"
     >
-      /apply
+      /get-started
       {copied ? (
         <IconCheck className="h-3 w-3 text-emerald-500" />
       ) : (
@@ -390,6 +393,25 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
       )}
 
       <div className="space-y-4">
+        {/* Services requested */}
+        {app.supportTypes && app.supportTypes.length > 0 && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
+              Services Requested
+            </h2>
+            <div className="flex flex-wrap gap-1.5">
+              {app.supportTypes.map((type) => (
+                <span
+                  key={type}
+                  className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                >
+                  {type}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Contact card */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
@@ -475,6 +497,30 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
                 <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.programAreas}</dd>
               </div>
             )}
+            {app.nonprofitStatus && (
+              <div>
+                <dt className="text-xs text-gray-400 dark:text-neutral-600">501(c)(3) Status</dt>
+                <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.nonprofitStatus}</dd>
+              </div>
+            )}
+            {app.yearFounded && (
+              <div>
+                <dt className="text-xs text-gray-400 dark:text-neutral-600">Year Founded</dt>
+                <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.yearFounded}</dd>
+              </div>
+            )}
+            {app.numberServed && (
+              <div>
+                <dt className="text-xs text-gray-400 dark:text-neutral-600">Number Served</dt>
+                <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.numberServed}</dd>
+              </div>
+            )}
+            {app.geographicArea && (
+              <div>
+                <dt className="text-xs text-gray-400 dark:text-neutral-600">Geographic Area</dt>
+                <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.geographicArea}</dd>
+              </div>
+            )}
           </dl>
           {app.missionStatement && (
             <div className="mt-4 border-t border-gray-100 pt-4 dark:border-neutral-800">
@@ -517,7 +563,69 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
               {app.projectDescription}
             </dd>
           </div>
+          {app.expectedOutcomes && (
+            <div className="border-t border-gray-100 pt-4 dark:border-neutral-800">
+              <dt className="mb-1 text-xs text-gray-400 dark:text-neutral-600">Expected Outcomes</dt>
+              <dd className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-neutral-300">
+                {app.expectedOutcomes}
+              </dd>
+            </div>
+          )}
         </div>
+
+        {/* Specific grant */}
+        {(app.grantFunderName || app.grantName) && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
+              Specific Grant
+            </h2>
+            <dl className="grid gap-3 text-sm md:grid-cols-2">
+              {app.grantFunderName && (
+                <div>
+                  <dt className="text-xs text-gray-400 dark:text-neutral-600">Funder</dt>
+                  <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.grantFunderName}</dd>
+                </div>
+              )}
+              {app.grantName && (
+                <div>
+                  <dt className="text-xs text-gray-400 dark:text-neutral-600">Grant Name</dt>
+                  <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.grantName}</dd>
+                </div>
+              )}
+              {app.grantDeadline && (
+                <div>
+                  <dt className="text-xs text-gray-400 dark:text-neutral-600">Deadline</dt>
+                  <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.grantDeadline}</dd>
+                </div>
+              )}
+              {app.grantFundingAmount && (
+                <div>
+                  <dt className="text-xs text-gray-400 dark:text-neutral-600">Funding Amount</dt>
+                  <dd className="font-medium text-gray-800 dark:text-neutral-200">{app.grantFundingAmount}</dd>
+                </div>
+              )}
+              {app.grantUrl && (
+                <div className="md:col-span-2">
+                  <dt className="text-xs text-gray-400 dark:text-neutral-600">Grant URL</dt>
+                  <dd>
+                    <a
+                      href={app.grantUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                    >
+                      {app.grantUrl.replace(/^https?:\/\//, "")}
+                      <IconExternalLink className="h-3 w-3" />
+                    </a>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        )}
+
+        {/* Uploaded documents */}
+        <DocumentsCard appId={app.id} />
 
         {/* Consultant notes */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
@@ -582,5 +690,56 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         </div>
       </div>
     </motion.div>
+  );
+}
+
+/* ── Documents card (admin detail) ─────────────────────── */
+
+function DocumentsCard({ appId }: { appId: string }) {
+  const docs = loadApplicationDocuments(appId);
+  if (docs.length === 0) return null;
+
+  const handleDownload = (doc: { data: string; name: string }) => {
+    const a = document.createElement("a");
+    a.href = doc.data;
+    a.download = doc.name;
+    a.click();
+  };
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
+        Documents ({docs.length})
+      </h2>
+      <div className="space-y-2">
+        {docs.map((doc) => {
+          const cat = DOCUMENT_CATEGORIES.find((c) => c.value === doc.category);
+          return (
+            <div
+              key={doc.id}
+              className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50"
+            >
+              <IconFileText className="h-4 w-4 shrink-0 text-indigo-500" />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  {doc.name}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500">
+                  <span>{formatFileSize(doc.size)}</span>
+                  <span>·</span>
+                  <span>{cat?.label || doc.category}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => handleDownload(doc)}
+                className="shrink-0 rounded px-2 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+              >
+                Download
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
-import type { GrantApplication, AppStatus } from "./types";
+import type { GrantApplication, AppStatus, UploadedFile } from "./types";
 
 const STORAGE_KEY = "rsg_applications";
+const DOCS_PREFIX = "rsg_docs_";
 
 function genId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -65,8 +66,33 @@ export function markApplicationViewed(id: string): void {
 export function deleteApplication(id: string): void {
   const apps = loadApplications().filter((a) => a.id !== id);
   saveApplications(apps);
+  deleteApplicationDocuments(id);
 }
 
 export function getApplication(id: string): GrantApplication | null {
   return loadApplications().find((a) => a.id === id) || null;
+}
+
+/* ── Document storage (separate keys to avoid bloating the app array) ── */
+
+export function saveApplicationDocuments(appId: string, docs: UploadedFile[]): void {
+  try {
+    localStorage.setItem(DOCS_PREFIX + appId, JSON.stringify(docs));
+  } catch (e) {
+    console.error("Failed to save documents — storage may be full", e);
+    throw new Error("Storage full. Please remove some files and try again.");
+  }
+}
+
+export function loadApplicationDocuments(appId: string): UploadedFile[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(DOCS_PREFIX + appId) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function deleteApplicationDocuments(appId: string): void {
+  localStorage.removeItem(DOCS_PREFIX + appId);
 }

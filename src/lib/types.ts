@@ -116,6 +116,18 @@ export const APP_STATUSES: { key: AppStatus; label: string; color: string }[] = 
   { key: "declined", label: "Declined", color: "#ef4444" },
 ];
 
+/* ── Uploaded file (document / RFP) ─────────────────────── */
+
+export interface UploadedFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  data: string; // base64 data-URL
+  uploadedAt: number;
+  category: string;
+}
+
 export interface GrantApplication {
   id: string;
   status: AppStatus;
@@ -130,6 +142,14 @@ export interface GrantApplication {
   website: string;
   missionStatement: string;
   annualBudget: string;
+  programAreas: string;
+
+  /* Org info (expanded) */
+  supportTypes?: string[];
+  nonprofitStatus?: string;
+  yearFounded?: string;
+  numberServed?: string;
+  geographicArea?: string;
 
   /* Contact */
   contactName: string;
@@ -143,7 +163,18 @@ export interface GrantApplication {
   amountRequested: string;
   projectTimeline: string;
   targetPopulation: string;
-  programAreas: string;
+  expectedOutcomes?: string;
+
+  /* Specific grant (optional) */
+  grantFunderName?: string;
+  grantName?: string;
+  grantDeadline?: string;
+  grantFundingAmount?: string;
+  grantUrl?: string;
+  grantRfpFile?: UploadedFile;
+
+  /* Documents */
+  documents?: UploadedFile[];
 
   /* How they found us */
   referralSource: string;
