@@ -20,12 +20,36 @@ export function saveApplications(apps: GrantApplication[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
 }
 
+/** Strip HTML/script tags from a string to prevent stored XSS */
+function sanitize(value: string): string {
+  return value
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+}
+
+/** Recursively sanitize all string values in an object */
+function sanitizeData<T extends Record<string, unknown>>(data: T): T {
+  const clean = { ...data };
+  for (const key of Object.keys(clean)) {
+    const val = clean[key];
+    if (typeof val === "string") {
+      (clean as Record<string, unknown>)[key] = sanitize(val);
+    } else if (Array.isArray(val)) {
+      (clean as Record<string, unknown>)[key] = val.map((item) =>
+        typeof item === "string" ? sanitize(item) : item
+      );
+    }
+  }
+  return clean;
+}
+
 export function submitApplication(
   data: Omit<GrantApplication, "id" | "status" | "submittedAt" | "updatedAt" | "notes">
 ): GrantApplication {
   const apps = loadApplications();
   const app: GrantApplication = {
-    ...data,
+    ...sanitizeData(data as Record<string, unknown>) as typeof data,
     id: genId(),
     status: "new",
     submittedAt: Date.now(),
@@ -50,7 +74,7 @@ export function updateApplicationNotes(id: string, notes: string): void {
   const apps = loadApplications();
   const app = apps.find((a) => a.id === id);
   if (!app) return;
-  app.notes = notes;
+  app.notes = sanitize(notes);
   app.updatedAt = Date.now();
   saveApplications(apps);
 }
