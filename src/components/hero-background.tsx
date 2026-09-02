@@ -136,6 +136,7 @@ function ParticleNetwork() {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
+            args={[positions, 3]}
             count={PARTICLE_COUNT}
             array={positions}
             itemSize={3}
@@ -156,12 +157,14 @@ function ParticleNetwork() {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
+            args={[linePositions, 3]}
             count={maxLines * 2}
             array={linePositions}
             itemSize={3}
           />
           <bufferAttribute
             attach="attributes-color"
+            args={[lineColors, 3]}
             count={maxLines * 2}
             array={lineColors}
             itemSize={3}
