@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { motion } from "motion/react";
 import {
   IconArrowRight,
@@ -17,6 +18,11 @@ import {
   IconTarget,
   IconChartBar,
 } from "@tabler/icons-react";
+
+const HeroBackground = dynamic(
+  () => import("@/components/hero-background"),
+  { ssr: false }
+);
 
 const SERVICES = [
   {
@@ -80,6 +86,19 @@ const VALUE_PROPS = [
 export default function LandingPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Swap nav colors when scrolling past the hero
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!heroRef.current) return;
+      const heroBottom = heroRef.current.offsetTop + heroRef.current.offsetHeight;
+      setNavScrolled(window.scrollY > heroBottom - 60);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -118,37 +137,62 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      {/* ── Sticky nav ────────────────────────────────── */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-5 transition-colors duration-300 ${
+          navScrolled
+            ? "bg-white/90 backdrop-blur-md shadow-sm dark:bg-neutral-900/90"
+            : ""
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="h-7 w-8 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
+          <span
+            className={`text-lg font-bold transition-colors duration-300 ${
+              navScrolled ? "text-gray-900 dark:text-white" : "text-white"
+            }`}
+          >
+            Ready Set Grants
+          </span>
+        </div>
+        <div className="hidden sm:flex items-center gap-6">
+          <a href="#services" className={`text-sm transition-colors ${navScrolled ? "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white" : "text-neutral-400 hover:text-white"}`}>Services</a>
+          <a href="#why-us" className={`text-sm transition-colors ${navScrolled ? "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white" : "text-neutral-400 hover:text-white"}`}>Why Us</a>
+          <a href="#get-started" className={`text-sm transition-colors ${navScrolled ? "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white" : "text-neutral-400 hover:text-white"}`}>Get Started</a>
+        </div>
+      </nav>
+
       {/* ── Hero ───────────────────────────────────────── */}
-      <section className="flex flex-col items-center px-6 pt-20 pb-16 text-center md:pt-28 md:pb-20">
+      <section ref={heroRef} className="relative flex flex-col px-6 overflow-hidden bg-gray-950 min-h-screen">
+        {/* WebGL background */}
+        <div className="pointer-events-none absolute inset-0 z-0 hidden sm:block" aria-hidden="true">
+          <Suspense fallback={null}>
+            <HeroBackground />
+          </Suspense>
+        </div>
+
+        {/* Vertically centered hero content */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mx-auto max-w-2xl"
+          className="relative z-10 mx-auto max-w-2xl text-center flex-1 flex flex-col justify-center"
         >
-          {/* Logo */}
-          <div className="mb-8 flex items-center justify-center gap-2.5">
-            <div className="h-7 w-8 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
-            <span className="text-lg font-bold text-gray-900 dark:text-white">
-              Ready Set Grants
-            </span>
-          </div>
-
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white md:text-5xl">
+          <h1 className="text-4xl font-extrabold tracking-tight text-white md:text-5xl">
             Grant funding starts
             <br />
-            <span className="text-indigo-600 dark:text-indigo-400">
+            <span className="text-indigo-400">
               with readiness.
             </span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-gray-500 dark:text-neutral-400">
+          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-neutral-400">
             We help nonprofits build the strategy, systems, and stories they
             need to win grants — from research and eligibility through writing
             and submission.
           </p>
 
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <div className="mt-8 flex flex-col items-center gap-4">
             <button
               onClick={handleGetStarted}
               className="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
@@ -158,17 +202,16 @@ export default function LandingPage() {
             </button>
             <button
               onClick={handleAdmin}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="text-sm text-neutral-500 transition-colors hover:text-indigo-400"
             >
-              <IconLayoutDashboard className="h-4 w-4" />
-              I&apos;m a Consultant
+              I&apos;m a consultant →
             </button>
           </div>
         </motion.div>
       </section>
 
       {/* ── Services ───────────────────────────────────── */}
-      <section className="px-6 py-16 md:py-20">
+      <section id="services" className="scroll-mt-14 px-6 py-16 md:py-20">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -213,7 +256,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Value props ────────────────────────────────── */}
-      <section className="border-t border-gray-200 bg-white px-6 py-16 dark:border-neutral-800 dark:bg-neutral-900 md:py-20">
+      <section id="why-us" className="scroll-mt-14 border-t border-gray-200 bg-white px-6 py-16 dark:border-neutral-800 dark:bg-neutral-900 md:py-20">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -242,7 +285,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA / Role picker ──────────────────────────── */}
-      <section className="px-6 py-16 md:py-20">
+      <section id="get-started" className="scroll-mt-14 px-6 py-16 md:py-20">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
