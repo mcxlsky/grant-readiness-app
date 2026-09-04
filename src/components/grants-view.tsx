@@ -88,6 +88,25 @@ export function GrantsView({
           return;
         }
 
+        // Try to find match quality data from org's analysis
+        let matchPct = 0;
+        let fits: string[] = [];
+        let blockers: string[] = [];
+        const analysis = org.analysis_data;
+        if (analysis?.grantMatches) {
+          // Match on funder name + program name
+          const match = analysis.grantMatches.find(
+            (gm) =>
+              gm.name.toLowerCase() === funderName.toLowerCase() ||
+              gm.focus.toLowerCase() === listing.program.toLowerCase()
+          );
+          if (match) {
+            matchPct = match.match_pct ?? 0;
+            fits = match.fits ?? [];
+            blockers = match.blockers ?? [];
+          }
+        }
+
         await createEngagement({
           org_id: org.id,
           opportunity_id: listing.id,
@@ -95,9 +114,10 @@ export function GrantsView({
           opportunity_name: `${funderName} — ${listing.program}`,
           stage: "prospect",
           deadline: listing.deadline,
-          match_pct: 0,
-          fits: [],
-          blockers: [],
+          amount_requested: listing.amount_max > 0 ? listing.amount_max : undefined,
+          match_pct: matchPct,
+          fits,
+          blockers,
         });
 
         const key = `${listing.id}-${org.id}`;

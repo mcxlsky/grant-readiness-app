@@ -26,7 +26,7 @@ import { useEngagements } from "@/lib/hooks/use-engagements";
 import { syncOrgsToSupabase, getEinToIdMap } from "@/lib/db/sync";
 import { PIPELINE_STAGES } from "@/lib/db/types";
 import type { PortfolioOrg, OrgSearchResult, Stage, AnalysisData, GrantApplication } from "@/lib/types";
-import type { DbOrganization } from "@/lib/db/types";
+import type { DbOrganization, EngagementStage } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
 export type View = "orgs" | "inbox" | "grants" | "pipeline";
@@ -39,6 +39,7 @@ export default function Home() {
   const [activeEin, setActiveEin] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [view, setView] = useState<View>("inbox");
+  const [activeStage, setActiveStage] = useState<EngagementStage | null>(null);
   const { theme, toggleTheme } = useTheme();
 
   // EIN → Supabase UUID mapping (populated after sync)
@@ -51,6 +52,7 @@ export default function Home() {
     loading: engagementsLoading,
     refresh: refreshEngagements,
     moveStage,
+    setNotes,
     removeEngagement,
   } = useEngagements({ stages: PIPELINE_STAGES });
 
@@ -213,6 +215,20 @@ export default function Home() {
     pipeline: engagements.length || undefined,
   };
 
+  // Stage counts for pipeline sub-nav
+  const stageCounts = useMemo(() => {
+    const map: Record<EngagementStage, number> = {
+      prospect: 0, researching: 0, writing: 0, submitted: 0,
+      awarded: 0, reporting: 0, closed: 0,
+    };
+    for (const eng of engagements) {
+      if (eng.stage in map) {
+        map[eng.stage as EngagementStage]++;
+      }
+    }
+    return map;
+  }, [engagements]);
+
   const renderMainContent = () => {
     if (view === "inbox") {
       return (
@@ -246,9 +262,11 @@ export default function Home() {
         <PipelineView
           engagements={engagements}
           loading={engagementsLoading}
+          activeStage={activeStage}
           onMoveStage={moveStage}
           onDelete={removeEngagement}
           onSelectOrg={handleSelectOrgById}
+          onUpdateNotes={setNotes}
         />
       );
     }
@@ -310,8 +328,11 @@ export default function Home() {
         <div className="hidden h-full w-[220px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
           <AppSidebar
             counts={counts}
+            stageCounts={stageCounts}
             view={view}
+            activeStage={activeStage}
             onSwitchView={handleSwitchView}
+            onSelectStage={setActiveStage}
           />
         </div>
 
