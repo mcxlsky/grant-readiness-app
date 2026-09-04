@@ -1,19 +1,17 @@
 "use client";
 
 import { useMemo } from "react";
-import { PortfolioOrg } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   IconBuilding,
   IconInbox,
   IconCoin,
+  IconTargetArrow,
 } from "@tabler/icons-react";
 import type { View } from "@/app/dashboard/page";
-import type { GrantApplication } from "@/lib/types";
 
 interface AppSidebarProps {
-  portfolio: PortfolioOrg[];
-  applications: GrantApplication[];
+  counts: Record<View, number | undefined>;
   view: View;
   onSwitchView: (v: View) => void;
 }
@@ -22,33 +20,14 @@ const NAV_ITEMS: { key: View; label: string; icon: typeof IconBuilding }[] = [
   { key: "inbox", label: "Inbox", icon: IconInbox },
   { key: "orgs", label: "Orgs", icon: IconBuilding },
   { key: "grants", label: "Grants", icon: IconCoin },
+  { key: "pipeline", label: "Pipeline", icon: IconTargetArrow },
 ];
 
 export function AppSidebar({
-  portfolio,
-  applications,
+  counts,
   view,
   onSwitchView,
 }: AppSidebarProps) {
-  const newAppCount = useMemo(
-    () => applications.filter((a) => a.status === "new").length,
-    [applications]
-  );
-
-  const grantCount = useMemo(
-    () =>
-      portfolio
-        .filter((o) => o.analysisData)
-        .reduce((sum, o) => sum + (o.analysisData!.grantMatches?.length || 0), 0),
-    [portfolio]
-  );
-
-  const counts: Record<View, number | undefined> = {
-    orgs: portfolio.length || undefined,
-    inbox: newAppCount || undefined,
-    grants: grantCount || undefined,
-  };
-
   return (
     <div className="flex h-full flex-col">
       {/* Nav items */}
@@ -97,13 +76,11 @@ export function AppSidebar({
 export function MobileTabBar({
   view,
   onSwitchView,
-  newAppCount,
+  counts,
 }: {
   view: View;
   onSwitchView: (v: View) => void;
-  newAppCount: number;
-  grantCount?: number;
-  orgCount?: number;
+  counts: Record<View, number | undefined>;
 }) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-gray-200 bg-white/95 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95 md:hidden">
@@ -111,7 +88,7 @@ export function MobileTabBar({
         const Icon = item.icon;
         const active = view === item.key;
         // Only show badge on Inbox
-        const count = item.key === "inbox" && newAppCount ? newAppCount : undefined;
+        const count = item.key === "inbox" && counts.inbox ? counts.inbox : undefined;
         return (
           <button
             key={item.key}

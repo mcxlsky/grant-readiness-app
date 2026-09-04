@@ -10,6 +10,7 @@ import { IntakeView } from "@/components/intake-view";
 import { DashboardView } from "@/components/dashboard-view";
 import { ApplicationsView } from "@/components/applications-view";
 import { GrantsView } from "@/components/grants-view";
+import { PipelineView } from "@/components/pipeline-view";
 import {
   loadPortfolio,
   savePortfolio,
@@ -21,10 +22,13 @@ import {
 import { loadApplications, saveApplications, updateApplicationStatus } from "@/lib/applications";
 import { SEED_PORTFOLIO, SEED_APPLICATIONS } from "@/lib/seed";
 import { useTheme } from "@/lib/theme";
+import { useEngagements } from "@/lib/hooks/use-engagements";
+import { PIPELINE_STAGES } from "@/lib/db/types";
 import type { PortfolioOrg, OrgSearchResult, Stage, AnalysisData, GrantApplication } from "@/lib/types";
+import type { DbOrganization } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
-export type View = "orgs" | "inbox" | "grants";
+export type View = "orgs" | "inbox" | "grants" | "pipeline";
 
 export default function Home() {
   const router = useRouter();
@@ -35,6 +39,15 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [view, setView] = useState<View>("inbox");
   const { theme, toggleTheme } = useTheme();
+
+  // Pipeline engagements (Supabase)
+  const {
+    engagements,
+    loading: engagementsLoading,
+    refresh: refreshEngagements,
+    moveStage,
+    removeEngagement,
+  } = useEngagements({ stages: PIPELINE_STAGES });
 
   useEffect(() => {
     // Read admin name if set
@@ -84,10 +97,15 @@ export default function Home() {
     setView("orgs");
   };
 
+  /** Called from Pipeline view — finds org by Supabase ID and switches to org view */
+  const handleSelectOrgById = (orgId: string) => {
+    // For now, we can't directly map Supabase org IDs to localStorage EINs
+    // This is a bridge until full migration. Just switch to orgs view.
+    setView("orgs");
+  };
+
   const handleAcceptApp = (app: GrantApplication) => {
-    // Parse EIN string to number (strip dashes)
     const einNum = parseInt(app.ein.replace(/\D/g, ""), 10);
-    // Add to portfolio if not already there
     if (!portfolio.some((o) => o.ein === einNum)) {
       addOrg({
         ein: einNum,
@@ -142,6 +160,35 @@ export default function Home() {
 
   const grantCount = allGrants.length;
 
+  // Convert localStorage portfolio orgs to DbOrganization shape for GrantsView
+  const orgsAsDb: DbOrganization[] = useMemo(
+    () =>
+      portfolio.map((o) => ({
+        id: String(o.ein), // Use EIN as stand-in ID until full migration
+        ein: o.ein,
+        strein: o.strein,
+        name: o.name,
+        city: o.city,
+        state: o.state,
+        ntee_code: o.ntee_code,
+        stage: o.stage,
+        added_at: new Date(o.addedAt).toISOString(),
+        analyzed_at: o.analyzedAt ? new Date(o.analyzedAt).toISOString() : null,
+        analysis_data: o.analysisData,
+        created_at: new Date(o.addedAt).toISOString(),
+        updated_at: new Date(o.addedAt).toISOString(),
+      })),
+    [portfolio]
+  );
+
+  // Sidebar counts
+  const counts: Record<View, number | undefined> = {
+    inbox: newAppCount || undefined,
+    orgs: portfolio.length || undefined,
+    grants: grantCount || undefined,
+    pipeline: engagements.length || undefined,
+  };
+
   const renderMainContent = () => {
     if (view === "inbox") {
       return (
@@ -150,7 +197,30 @@ export default function Home() {
     }
 
     if (view === "grants") {
-      return <GrantsView grants={allGrants} portfolio={portfolio} onSelectOrg={handleSelectOrg} onRefresh={refresh} />;
+      return (
+        <GrantsView
+          organizations={orgsAsDb}
+          onSelectOrg={(orgId) => {
+            // Try to match by EIN (orgId is the string EIN during bridge period)
+            const ein = parseInt(orgId, 10);
+            if (!isNaN(ein)) handleSelectOrg(ein);
+          }}
+          onRefresh={refresh}
+          onEngagementCreated={refreshEngagements}
+        />
+      );
+    }
+
+    if (view === "pipeline") {
+      return (
+        <PipelineView
+          engagements={engagements}
+          loading={engagementsLoading}
+          onMoveStage={moveStage}
+          onDelete={removeEngagement}
+          onSelectOrg={handleSelectOrgById}
+        />
+      );
     }
 
     // view === "orgs"
@@ -209,8 +279,7 @@ export default function Home() {
         {/* Desktop sidebar */}
         <div className="hidden h-full w-[220px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
           <AppSidebar
-            portfolio={portfolio}
-            applications={applications}
+            counts={counts}
             view={view}
             onSwitchView={handleSwitchView}
           />
@@ -234,9 +303,7 @@ export default function Home() {
       <MobileTabBar
         view={view}
         onSwitchView={handleSwitchView}
-        newAppCount={newAppCount}
-        grantCount={grantCount}
-        orgCount={portfolio.length}
+        counts={counts}
       />
 
       <SearchModal
