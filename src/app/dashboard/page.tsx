@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AppSidebar, MobileTabBar } from "@/components/app-sidebar";
 import { ProfileDropdown } from "@/components/profile-dropdown";
@@ -23,6 +23,7 @@ import { loadApplications, saveApplications, updateApplicationStatus } from "@/l
 import { SEED_PORTFOLIO, SEED_APPLICATIONS } from "@/lib/seed";
 import { useTheme } from "@/lib/theme";
 import { useEngagements } from "@/lib/hooks/use-engagements";
+import { syncOrgsToSupabase, getEinToIdMap } from "@/lib/db/sync";
 import { PIPELINE_STAGES } from "@/lib/db/types";
 import type { PortfolioOrg, OrgSearchResult, Stage, AnalysisData, GrantApplication } from "@/lib/types";
 import type { DbOrganization } from "@/lib/db/types";
@@ -39,6 +40,10 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [view, setView] = useState<View>("inbox");
   const { theme, toggleTheme } = useTheme();
+
+  // EIN → Supabase UUID mapping (populated after sync)
+  const [einMap, setEinMap] = useState<Map<number, string>>(new Map());
+  const syncedRef = useRef(false);
 
   // Pipeline engagements (Supabase)
   const {
@@ -72,6 +77,15 @@ export default function Home() {
     setApplications(a);
   }, []);
 
+  // Sync localStorage orgs → Supabase (once)
+  useEffect(() => {
+    if (portfolio.length === 0 || syncedRef.current) return;
+    syncedRef.current = true;
+    syncOrgsToSupabase(portfolio).then((map) => {
+      setEinMap(new Map(map));
+    });
+  }, [portfolio]);
+
   const refresh = useCallback(() => {
     setPortfolio(loadPortfolio());
     setApplications(loadApplications());
@@ -82,6 +96,8 @@ export default function Home() {
   const handleAddOrg = (org: OrgSearchResult) => {
     addOrg(org);
     refresh();
+    // Re-sync so new org gets a Supabase ID
+    syncedRef.current = false;
     setActiveEin(org.ein);
     setView("orgs");
   };
@@ -97,10 +113,16 @@ export default function Home() {
     setView("orgs");
   };
 
-  /** Called from Pipeline view — finds org by Supabase ID and switches to org view */
+  /** Called from Pipeline view — finds org by Supabase ID and navigates to it */
   const handleSelectOrgById = (orgId: string) => {
-    // For now, we can't directly map Supabase org IDs to localStorage EINs
-    // This is a bridge until full migration. Just switch to orgs view.
+    // Reverse-lookup: find EIN from Supabase ID
+    for (const [ein, id] of einMap) {
+      if (id === orgId) {
+        handleSelectOrg(ein);
+        return;
+      }
+    }
+    // Fallback: just switch to orgs view
     setView("orgs");
   };
 
@@ -118,6 +140,7 @@ export default function Home() {
     }
     updateApplicationStatus(app.id, "approved");
     refresh();
+    syncedRef.current = false; // Re-sync for new org
     setActiveEin(einNum);
     setView("orgs");
   };
@@ -160,11 +183,12 @@ export default function Home() {
 
   const grantCount = allGrants.length;
 
-  // Convert localStorage portfolio orgs to DbOrganization shape for GrantsView
+  // Convert localStorage portfolio orgs to DbOrganization shape for GrantsView,
+  // using real Supabase UUIDs when available
   const orgsAsDb: DbOrganization[] = useMemo(
     () =>
       portfolio.map((o) => ({
-        id: String(o.ein), // Use EIN as stand-in ID until full migration
+        id: einMap.get(o.ein) || String(o.ein),
         ein: o.ein,
         strein: o.strein,
         name: o.name,
@@ -178,7 +202,7 @@ export default function Home() {
         created_at: new Date(o.addedAt).toISOString(),
         updated_at: new Date(o.addedAt).toISOString(),
       })),
-    [portfolio]
+    [portfolio, einMap]
   );
 
   // Sidebar counts
@@ -201,7 +225,13 @@ export default function Home() {
         <GrantsView
           organizations={orgsAsDb}
           onSelectOrg={(orgId) => {
-            // Try to match by EIN (orgId is the string EIN during bridge period)
+            // Reverse-lookup if it's a UUID, otherwise try as EIN
+            for (const [ein, id] of einMap) {
+              if (id === orgId) {
+                handleSelectOrg(ein);
+                return;
+              }
+            }
             const ein = parseInt(orgId, 10);
             if (!isNaN(ein)) handleSelectOrg(ein);
           }}
