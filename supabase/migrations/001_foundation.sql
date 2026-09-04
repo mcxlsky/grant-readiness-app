@@ -3,12 +3,15 @@
 -- Run this in the Supabase SQL Editor (supabase.com/dashboard)
 -- ============================================================
 
+-- Enable UUID generation (safe to run multiple times)
+create extension if not exists "uuid-ossp";
+
 -- ── Organizations ────────────────────────────────────────────
 -- Replaces the localStorage PortfolioOrg.
 -- analysis_data stays as JSONB for now (readiness engine output).
 
-create table if not exists organizations (
-  id          uuid primary key default gen_random_uuid(),
+create table organizations (
+  id          uuid primary key default uuid_generate_v4(),
   ein         bigint not null unique,
   strein      text not null,
   name        text not null,
@@ -31,8 +34,8 @@ create index idx_organizations_stage on organizations (stage);
 -- ── Funders ──────────────────────────────────────────────────
 -- Normalized funder identity. A grant opportunity belongs to a funder.
 
-create table if not exists funders (
-  id          uuid primary key default gen_random_uuid(),
+create table funders (
+  id          uuid primary key default uuid_generate_v4(),
   name        text not null unique,
   url         text,
   type        text not null default 'Foundation'
@@ -44,8 +47,8 @@ create table if not exists funders (
 -- ── Grant Opportunities ──────────────────────────────────────
 -- Replaces the static GRANT_DATABASE array.
 
-create table if not exists grant_opportunities (
-  id          uuid primary key default gen_random_uuid(),
+create table grant_opportunities (
+  id          uuid primary key default uuid_generate_v4(),
   funder_id   uuid not null references funders(id) on delete cascade,
   program     text not null,
   description text not null default '',
@@ -71,8 +74,8 @@ create index idx_opportunities_active on grant_opportunities (active) where acti
 -- ── Grant Engagements ────────────────────────────────────────
 -- The lifecycle spine: tracks one org pursuing one opportunity.
 
-create table if not exists grant_engagements (
-  id              uuid primary key default gen_random_uuid(),
+create table grant_engagements (
+  id              uuid primary key default uuid_generate_v4(),
   org_id          uuid not null references organizations(id) on delete cascade,
   opportunity_id  uuid references grant_opportunities(id) on delete set null,
   funder_name     text not null default '',         -- denormalized for display
@@ -124,8 +127,8 @@ create index idx_engagements_outcome on grant_engagements (outcome);
 -- ── Applications ─────────────────────────────────────────────
 -- Replaces the localStorage GrantApplication.
 
-create table if not exists applications (
-  id              uuid primary key default gen_random_uuid(),
+create table applications (
+  id              uuid primary key default uuid_generate_v4(),
   status          text not null default 'new'
                   check (status in ('new','reviewing','approved','declined','info_needed')),
   submitted_at    timestamptz not null default now(),
