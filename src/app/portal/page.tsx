@@ -493,6 +493,73 @@ function OverviewPanel({ app, org }: { app: GrantApplication; org: PortfolioOrg 
         Here&apos;s where things stand with {app.orgName}.
       </p>
 
+      {/* Readiness score — instant feedback from automated assessment */}
+      {org?.analysisData?.readiness && (() => {
+        const r = org.analysisData!.readiness;
+        const pct = r.overall;
+        const isReady = r.tier === "Grant-Ready" || r.tier === "Strong";
+        const tierColor = isReady
+          ? "text-emerald-600 dark:text-emerald-400"
+          : pct >= 50
+          ? "text-amber-600 dark:text-amber-400"
+          : "text-red-600 dark:text-red-400";
+        const ringColor = isReady
+          ? "stroke-emerald-500"
+          : pct >= 50
+          ? "stroke-amber-500"
+          : "stroke-red-500";
+        const sections = [
+          { label: "Financial", score: r.financial.score },
+          { label: "Compliance", score: r.compliance.score },
+          { label: "Digital Presence", score: r.digital.score },
+        ];
+        return (
+          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex items-center gap-5">
+              {/* Circular score */}
+              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
+                <svg className="h-20 w-20 -rotate-90" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
+                    className="stroke-gray-100 dark:stroke-neutral-800" />
+                  <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(pct / 100) * 188.5} 188.5`}
+                    className={ringColor} />
+                </svg>
+                <span className="absolute text-lg font-bold text-gray-900 dark:text-white">{pct}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className={`text-sm font-semibold ${tierColor}`}>{r.tier}</div>
+                <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">
+                  Grant Readiness Score
+                </div>
+                {/* Section bars */}
+                <div className="mt-3 space-y-1.5">
+                  {sections.map((s) => (
+                    <div key={s.label} className="flex items-center gap-2">
+                      <span className="w-24 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.label}</span>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-800">
+                        <div
+                          className={`h-full rounded-full ${
+                            s.score >= 70
+                              ? "bg-emerald-500"
+                              : s.score >= 40
+                              ? "bg-amber-500"
+                              : "bg-red-500"
+                          }`}
+                          style={{ width: `${s.score}%` }}
+                        />
+                      </div>
+                      <span className="w-6 text-right text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.score}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Action items — lead with these when they exist */}
       <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">

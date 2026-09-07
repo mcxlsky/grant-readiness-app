@@ -479,7 +479,7 @@ export default function GetStartedPage() {
   const [geoTags, setGeoTags] = useState<string[]>([]);
   const [documents, setDocuments] = useState<UploadedFile[]>([]);
   const [grantRfpFile, setGrantRfpFile] = useState<UploadedFile | null>(null);
-  const [docCategory, setDocCategory] = useState("other");
+  const [docCategory, setDocCategory] = useState("");
 
   /* ── Setters ────────────────────────────────── */
 
@@ -566,7 +566,7 @@ export default function GetStartedPage() {
         break;
       }
       try {
-        const uploaded = await processFileUpload(file, docCategory);
+        const uploaded = await processFileUpload(file, docCategory || "other");
         setDocuments((prev) => [...prev, uploaded]);
       } catch {
         setFileError(`Failed to read "${file.name}". Please try again.`);
@@ -1410,6 +1410,7 @@ function StepExtras({
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="flex-1">
                 <select value={docCategory} onChange={(e) => setDocCategory(e.target.value)} className={selectClsErr()}>
+                  <option value="" disabled>Select type…</option>
                   {DOCUMENT_CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
