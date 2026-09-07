@@ -30,6 +30,9 @@ import { GRANT_DATABASE } from "@/lib/grant-database";
 import { fmt$ } from "@/lib/utils";
 import { formatFileSize, DOCUMENT_CATEGORIES } from "@/lib/file-utils";
 import type { GrantApplication, AppStatus, PortfolioOrg, UploadedFile, PitchedGrant, ReviewStatus } from "@/lib/types";
+import { PaywallModal } from "@/components/paywall-modal";
+import { updateOrgStage } from "@/lib/portfolio";
+import { IconArrowRight, IconSparkles } from "@tabler/icons-react";
 import { Suspense } from "react";
 
 /* ── Status config ─────────────────────────────────────── */
@@ -94,7 +97,7 @@ const STATUS_MAP: Record<AppStatus, StatusInfo> = {
   },
 };
 
-/* ── Upcoming milestones by status ─────────────────────── */
+/* ── Upcoming milestones — derived from org state ────── */
 
 interface Milestone {
   title: string;
@@ -103,39 +106,45 @@ interface Milestone {
   current?: boolean;
 }
 
-function getMilestones(status: AppStatus): Milestone[] {
-  switch (status) {
-    case "new":
-      return [
-        { title: "Application review", description: "Your consultant will review your intake form.", current: true, done: false },
-        { title: "Kickoff call", description: "Meet your consultant and discuss your goals.", done: false },
-        { title: "Readiness assessment", description: "Identify what your organization needs to be grant-ready.", done: false },
-      ];
-    case "reviewing":
-      return [
-        { title: "Application review", description: "Your consultant is reviewing your intake form.", current: true, done: false },
-        { title: "Kickoff call", description: "Meet your consultant and discuss your goals.", done: false },
-        { title: "Readiness assessment", description: "Identify what your organization needs to be grant-ready.", done: false },
-      ];
-    case "info_needed":
-      return [
-        { title: "Provide additional info", description: "Your consultant needs more details before proceeding.", current: true, done: false },
-        { title: "Kickoff call", description: "Meet your consultant and discuss your goals.", done: false },
-        { title: "Readiness assessment", description: "Identify what your organization needs to be grant-ready.", done: false },
-      ];
-    case "approved":
-      return [
-        { title: "Kickoff call", description: "Meet your consultant and map out your readiness plan.", current: true, done: false },
-        { title: "Readiness assessment", description: "Review your organization's capacity, financials, and compliance.", done: false },
-        { title: "Capacity building", description: "Address gaps before pursuing grant opportunities.", done: false },
-      ];
-    case "declined":
-      return [
-        { title: "Review feedback", description: "Check your email for details about the decision.", current: true, done: false },
-      ];
-    default:
-      return [];
-  }
+function getMilestones(org: PortfolioOrg | null): Milestone[] {
+  const hasScore = !!org?.analysisData?.readiness;
+  const readiness = org?.analysisData?.readiness;
+  const isReady = readiness && (readiness.tier === "Grant-Ready" || readiness.tier === "Strong");
+  const hasGaps = readiness && readiness.gaps.length > 0;
+  const inPipeline = org && (org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted");
+  const hasSubmitted = org?.pitchedGrants?.some((g) => g.status === "submitted" || g.status === "awarded");
+
+  return [
+    {
+      title: "Readiness assessment",
+      description: hasScore
+        ? `Score: ${readiness!.overall}/100 — ${readiness!.tier}`
+        : "Automated analysis of your financials, compliance, and digital presence.",
+      done: hasScore,
+    },
+    {
+      title: "Address gaps",
+      description: hasGaps && !isReady
+        ? `${readiness!.gaps.length} items to resolve before you're grant-ready.`
+        : "Resolve any compliance or capacity issues flagged in the assessment.",
+      done: isReady ?? false,
+      current: hasScore && !isReady,
+    },
+    {
+      title: "Unlock grant writing",
+      description: inPipeline
+        ? "Your consultant is actively prospecting and writing on your behalf."
+        : "Start working with a consultant to find and pursue grant opportunities.",
+      done: !!inPipeline,
+      current: (isReady && !inPipeline) ?? false,
+    },
+    {
+      title: "Submit proposals",
+      description: "Your consultant drafts proposals for your review and approval.",
+      done: !!hasSubmitted,
+      current: !!inPipeline && !hasSubmitted,
+    },
+  ];
 }
 
 /* ── Sidebar nav items ────────────────────────────────── */
@@ -170,6 +179,9 @@ function PortalContent() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [view, setView] = useState<PortalView>("overview");
+
+  // Paywall state
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   // Fallback lookup state
   const [email, setEmail] = useState("");
@@ -407,7 +419,7 @@ function PortalContent() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                {view === "overview" && <OverviewPanel app={app} org={org} onNavigate={setView} />}
+                {view === "overview" && <OverviewPanel app={app} org={org} onNavigate={setView} onUnlock={() => setPaywallOpen(true)} />}
                 {view === "grants" && <GrantPlanPanel org={org} onRefreshOrg={() => setOrg(resolveOrg(app))} />}
                 {view === "documents" && <DocumentsPanel app={app} />}
                 {view === "messages" && <MessagesPanel />}
@@ -439,14 +451,30 @@ function PortalContent() {
           );
         })}
       </div>
+
+      {/* Paywall modal */}
+      {app && org?.analysisData?.readiness && (
+        <PaywallModal
+          open={paywallOpen}
+          onClose={() => setPaywallOpen(false)}
+          onConfirm={() => {
+            setPaywallOpen(false);
+            // Move org to prospecting stage
+            updateOrgStage(org.ein, "prospecting");
+            setOrg(resolveOrg(app));
+          }}
+          orgName={app.orgName}
+          score={org.analysisData.readiness.overall}
+        />
+      )}
     </div>
   );
 }
 
 /* ── Overview panel ───────────────────────────────────── */
 
-function OverviewPanel({ app, org }: { app: GrantApplication; org: PortfolioOrg | null; onNavigate: (v: PortalView) => void }) {
-  const milestones = getMilestones(app.status);
+function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: PortfolioOrg | null; onNavigate: (v: PortalView) => void; onUnlock: () => void }) {
+  const milestones = getMilestones(org);
 
   // Derive action items from failing readiness checks
   const actionItems: { title: string; category: string; priority: "high" | "medium" | "low" }[] = [];
@@ -557,6 +585,33 @@ function OverviewPanel({ app, org }: { app: GrantApplication; org: PortfolioOrg 
               </div>
             </div>
           </div>
+        );
+      })()}
+
+      {/* Unlock CTA — shown when Grant-Ready but not yet in pipeline */}
+      {org?.analysisData?.readiness && (() => {
+        const r = org.analysisData!.readiness;
+        const isReady = r.tier === "Grant-Ready" || r.tier === "Strong";
+        const inPipeline = org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted";
+        if (!isReady || inPipeline) return null;
+        return (
+          <button
+            onClick={onUnlock}
+            className="mb-6 flex w-full items-center gap-4 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50 p-5 text-left transition-colors hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-800/50 dark:from-indigo-500/10 dark:to-violet-500/10 dark:hover:border-indigo-700/50 dark:hover:from-indigo-500/15 dark:hover:to-violet-500/15"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 dark:bg-indigo-500">
+              <IconSparkles className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                Ready to start winning grants?
+              </div>
+              <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
+                Unlock grant prospecting, proposal support, and pipeline management.
+              </div>
+            </div>
+            <IconArrowRight className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+          </button>
         );
       })()}
 
