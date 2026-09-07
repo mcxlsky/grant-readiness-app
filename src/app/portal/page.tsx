@@ -617,28 +617,6 @@ function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: Por
             </div>
           )}
 
-          {/* Compact readiness score */}
-          {readiness && (
-            <div className="rounded-xl border border-gray-200 bg-white px-5 py-3.5 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="flex items-center gap-3">
-                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
-                  <svg className="h-10 w-10 -rotate-90" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
-                      className="stroke-gray-100 dark:stroke-neutral-800" />
-                    <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
-                      strokeLinecap="round"
-                      strokeDasharray={`${(readiness.overall / 100) * 188.5} 188.5`}
-                      className="stroke-emerald-500" />
-                  </svg>
-                  <span className="absolute text-[10px] font-bold text-gray-900 dark:text-white">{readiness.overall}</span>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-600 dark:text-neutral-300">Readiness Score</div>
-                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400">{readiness.tier}</div>
-                </div>
-              </div>
-            </div>
-          )}
         </>
       ) : (
         /* ── PRE-PIPELINE VIEW: score + action items + unlock ── */
