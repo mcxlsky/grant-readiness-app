@@ -13,6 +13,7 @@ import {
   IconPlus,
   IconCheck,
   IconTargetArrow,
+  IconX,
 } from "@tabler/icons-react";
 import { cn, fmt$ } from "@/lib/utils";
 import type { DbOpportunityWithFunder, DbOrganization } from "@/lib/db/types";
@@ -30,6 +31,36 @@ interface GrantsViewProps {
 type Tab = "find" | "tracked";
 type GrantType = "All" | "Federal" | "Foundation" | "Corporate" | "State";
 
+interface GrantSource {
+  name: string;
+  enabled: boolean;
+}
+
+const DEFAULT_SOURCES: GrantSource[] = [
+  { name: "Grants.gov", enabled: true },
+  { name: "Foundation Directory Online", enabled: true },
+  { name: "Corporate Giving Database", enabled: true },
+];
+
+function loadSources(): GrantSource[] {
+  try {
+    const raw = localStorage.getItem("rsg_grant_sources");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Handle legacy format (string[])
+      if (Array.isArray(parsed) && typeof parsed[0] === "string") {
+        return (parsed as string[]).map((name) => ({ name, enabled: true }));
+      }
+      return parsed as GrantSource[];
+    }
+  } catch { /* use default */ }
+  return DEFAULT_SOURCES.map((s) => ({ ...s }));
+}
+
+function saveSources(sources: GrantSource[]) {
+  try { localStorage.setItem("rsg_grant_sources", JSON.stringify(sources)); } catch {}
+}
+
 export function GrantsView({
   organizations,
   onSelectOrg,
@@ -46,6 +77,11 @@ export function GrantsView({
   const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
   // Which grant is showing the org-picker
   const [assigningGrant, setAssigningGrant] = useState<string | null>(null);
+  // Configurable grant sources
+  const [sources, setSources] = useState<GrantSource[]>(loadSources);
+  const [addingSource, setAddingSource] = useState(false);
+  const [newSource, setNewSource] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const analyzedOrgs = useMemo(
     () => organizations.filter((o) => o.analysis_data),
@@ -74,6 +110,18 @@ export function GrantsView({
     fetchOpportunities();
     return () => { cancelled = true; };
   }, [query, typeFilter]);
+
+  // Filter by enabled sources
+  const enabledSources = useMemo(
+    () => new Set(sources.filter((s) => s.enabled).map((s) => s.name)),
+    [sources]
+  );
+  const filteredResults = useMemo(
+    () => enabledSources.size === sources.length
+      ? dbResults
+      : dbResults.filter((r) => enabledSources.has(r.source)),
+    [dbResults, enabledSources, sources.length]
+  );
 
   const handleTrackGrant = useCallback(
     async (listing: DbOpportunityWithFunder, org: DbOrganization) => {
@@ -138,93 +186,183 @@ export function GrantsView({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Grants
-        </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-neutral-500">
-          Search grant databases and track opportunities for your organizations.
-        </p>
-      </div>
-
-      {/* Search + filters */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by funder, focus area, keyword…"
-            className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:placeholder-neutral-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/30"
-          />
-        </div>
-
-        {/* Type filter */}
-        <div className="relative">
-          <button
-            onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            <IconFilter className="h-3.5 w-3.5" />
-            {typeFilter}
-            <IconChevronDown className="h-3.5 w-3.5" />
-          </button>
-          {showTypeDropdown && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowTypeDropdown(false)}
-              />
-              <div className="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
-                {(
-                  ["All", "Federal", "Foundation", "Corporate"] as const
-                ).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => {
-                      setTypeFilter(t);
-                      setShowTypeDropdown(false);
-                    }}
-                    className={cn(
-                      "w-full px-3 py-1.5 text-left text-sm transition-colors",
-                      typeFilter === t
-                        ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
-                        : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                    )}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        <span className="text-xs text-gray-400 dark:text-neutral-600">
-          {loading ? "Loading…" : `${dbResults.length} result${dbResults.length !== 1 ? "s" : ""}`}
-        </span>
-      </div>
-
-      {/* Source attribution */}
-      <div className="mb-4 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-400 dark:text-neutral-600">
-        <span>Sources:</span>
-        {["Grants.gov", "Foundation Directory Online", "Corporate Giving Database"].map(
-          (s) => (
-            <span
-              key={s}
-              className="text-gray-500 dark:text-neutral-500"
+      {/* Toolbar — matches Inbox style */}
+      <div className="mb-2 flex items-center gap-1.5">
+        <AnimatePresence mode="wait">
+          {searchOpen ? (
+            <motion.div
+              key="search"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-1 items-center gap-2"
             >
-              {s}
-            </span>
-          )
-        )}
+              <div className="relative flex-1">
+                <IconSearch className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by funder, focus area, keyword…"
+                  autoFocus
+                  className="w-full rounded-lg border border-gray-200 bg-white py-1.5 pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:placeholder-neutral-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/30"
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setQuery("");
+                      setSearchOpen(false);
+                    }
+                  }}
+                />
+              </div>
+              <button
+                onClick={() => { setQuery(""); setSearchOpen(false); }}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                title="Close search"
+              >
+                <IconX className="h-4 w-4" />
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="toolbar"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-1 items-center gap-1.5"
+            >
+              <h2 className="flex-1 text-sm font-semibold text-gray-900 dark:text-white">
+                Grants
+              </h2>
+
+              {/* Sources dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                  className={cn(
+                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
+                    sources.some((s) => !s.enabled)
+                      ? "text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                      : "text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                  )}
+                  title="Sources"
+                >
+                  <IconFilter className="h-4 w-4" />
+                </button>
+                {showTypeDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowTypeDropdown(false)}
+                    />
+                    <div className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
+                      <div className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">Sources</div>
+                      {sources.map((s, i) => (
+                        <button
+                          key={s.name}
+                          onClick={() => {
+                            const next = sources.map((src, j) =>
+                              j === i ? { ...src, enabled: !src.enabled } : src
+                            );
+                            setSources(next);
+                            saveSources(next);
+                          }}
+                          className={cn(
+                            "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors",
+                            s.enabled
+                              ? "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                              : "text-gray-400 hover:bg-gray-50 dark:text-neutral-500 dark:hover:bg-neutral-700"
+                          )}
+                        >
+                          <IconCheck className={cn("h-3.5 w-3.5 shrink-0", s.enabled ? "opacity-100" : "opacity-0")} />
+                          {s.name}
+                        </button>
+                      ))}
+                      {/* Add source */}
+                      <div className="mx-3 my-1 border-t border-gray-100 dark:border-neutral-700" />
+                      {addingSource ? (
+                        <form
+                          className="px-3 py-1.5"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const trimmed = newSource.trim();
+                            if (trimmed && !sources.some((s) => s.name === trimmed)) {
+                              const next = [...sources, { name: trimmed, enabled: true }];
+                              setSources(next);
+                              saveSources(next);
+                            }
+                            setNewSource("");
+                            setAddingSource(false);
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={newSource}
+                            onChange={(e) => setNewSource(e.target.value)}
+                            placeholder="Source name…"
+                            autoFocus
+                            className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-indigo-400 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 dark:placeholder:text-neutral-500"
+                            onKeyDown={(e) => { if (e.key === "Escape") { setAddingSource(false); setNewSource(""); } }}
+                            onBlur={() => {
+                              const trimmed = newSource.trim();
+                              if (trimmed && !sources.some((s) => s.name === trimmed)) {
+                                const next = [...sources, { name: trimmed, enabled: true }];
+                                setSources(next);
+                                saveSources(next);
+                              }
+                              setNewSource("");
+                              setAddingSource(false);
+                            }}
+                          />
+                        </form>
+                      ) : (
+                        <button
+                          onClick={() => setAddingSource(true)}
+                          className="mx-3 my-1 flex items-center justify-center rounded-md border border-dashed border-gray-300 p-1.5 text-gray-400 transition-colors hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 dark:border-neutral-600 dark:text-neutral-500 dark:hover:border-indigo-500 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
+                          title="Add source"
+                        >
+                          <IconPlus className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                title="Search"
+              >
+                <IconSearch className="h-4 w-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Type filter chips */}
+      <div className="mb-4 flex flex-wrap items-center gap-1.5 text-[11px]">
+        {(["All", "Federal", "Foundation", "Corporate"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTypeFilter(t)}
+            className={cn(
+              "rounded-full border px-2.5 py-1 transition-colors",
+              typeFilter === t
+                ? "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-400"
+                : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500 dark:hover:border-neutral-600 dark:hover:text-neutral-400"
+            )}
+          >
+            {t}
+          </button>
+        ))}
       </div>
 
       {/* Results */}
       <div className="space-y-3">
-        {dbResults.map((listing, i) => (
+        {filteredResults.map((listing, i) => (
           <GrantDatabaseCard
             key={listing.id}
             listing={listing}
@@ -237,7 +375,7 @@ export function GrantsView({
             onTrack={handleTrackGrant}
           />
         ))}
-        {!loading && dbResults.length === 0 && (
+        {!loading && filteredResults.length === 0 && (
           <div className="py-12 text-center text-sm text-gray-400 dark:text-neutral-500">
             No grants match your search. Try broadening your keywords.
           </div>

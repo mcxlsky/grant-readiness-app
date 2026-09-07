@@ -18,13 +18,18 @@ import {
   IconHelpCircle,
   IconUser,
   IconLogout,
+  IconTargetArrow,
+  IconSend,
+  IconMessageDots,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { loadApplications, loadApplicationDocuments } from "@/lib/applications";
-import { loadPortfolio } from "@/lib/portfolio";
+import { loadPortfolio, updatePitchedGrantReviewStatus, updatePitchedGrantReviewComments } from "@/lib/portfolio";
+import { GRANT_DATABASE } from "@/lib/grant-database";
+import { fmt$ } from "@/lib/utils";
 import { formatFileSize, DOCUMENT_CATEGORIES } from "@/lib/file-utils";
-import type { GrantApplication, AppStatus, PortfolioOrg, UploadedFile } from "@/lib/types";
+import type { GrantApplication, AppStatus, PortfolioOrg, UploadedFile, PitchedGrant, ReviewStatus } from "@/lib/types";
 import { Suspense } from "react";
 
 /* ── Status config ─────────────────────────────────────── */
@@ -46,6 +51,14 @@ const STATUS_MAP: Record<AppStatus, StatusInfo> = {
     borderColor: "border-indigo-200 dark:border-indigo-500/20",
     icon: IconMail,
     description: "Your application has been received and is in queue for review.",
+  },
+  pending: {
+    label: "Processing",
+    color: "text-blue-600 dark:text-blue-400",
+    bgColor: "bg-blue-50 dark:bg-blue-500/10",
+    borderColor: "border-blue-200 dark:border-blue-500/20",
+    icon: IconClock,
+    description: "Your application is being processed.",
   },
   reviewing: {
     label: "Under Review",
@@ -127,10 +140,11 @@ function getMilestones(status: AppStatus): Milestone[] {
 
 /* ── Sidebar nav items ────────────────────────────────── */
 
-type PortalView = "overview" | "documents" | "messages" | "help";
+type PortalView = "overview" | "grants" | "documents" | "messages" | "help";
 
 const NAV_ITEMS: { id: PortalView; label: string; icon: typeof IconLayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: IconLayoutDashboard },
+  { id: "grants", label: "Grant Plan", icon: IconTargetArrow },
   { id: "documents", label: "Documents", icon: IconFolder },
   { id: "messages", label: "Messages", icon: IconMessageCircle },
   { id: "help", label: "Help", icon: IconHelpCircle },
@@ -394,6 +408,7 @@ function PortalContent() {
                 transition={{ duration: 0.2 }}
               >
                 {view === "overview" && <OverviewPanel app={app} org={org} onNavigate={setView} />}
+                {view === "grants" && <GrantPlanPanel org={org} onRefreshOrg={() => setOrg(resolveOrg(app))} />}
                 {view === "documents" && <DocumentsPanel app={app} />}
                 {view === "messages" && <MessagesPanel />}
                 {view === "help" && <HelpPanel />}
@@ -729,6 +744,321 @@ function MessagesPanel() {
         </p>
       </div>
     </>
+  );
+}
+
+/* ── Grant Plan panel — applicant sees pitched grants + reviews answers ── */
+
+function GrantPlanPanel({ org, onRefreshOrg }: { org: PortfolioOrg | null; onRefreshOrg: () => void }) {
+  const [reviewingGrant, setReviewingGrant] = useState<PitchedGrant | null>(null);
+
+  const pitched = org?.pitchedGrants ?? [];
+
+  // Only show grants that are in writing or later (not early prospects the consultant hasn't committed to)
+  const visibleGrants = pitched.filter((g) =>
+    g.status === "writing" || g.status === "submitted" || g.status === "awarded" || g.status === "declined"
+  );
+
+  if (!org) {
+    return (
+      <>
+        <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">Grant Plan</h1>
+        <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
+          Your consultant hasn&apos;t started prospecting yet.
+        </p>
+        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-10 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+          <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
+          <p className="text-sm text-gray-400 dark:text-neutral-500">
+            Grants matched to your organization will appear here.
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">Grant Plan</h1>
+      <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
+        Grants your consultant is pursuing for {org.name}.
+      </p>
+
+      {visibleGrants.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-10 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+          <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
+          <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
+            No active grants yet
+          </p>
+          <p className="mt-1 text-xs text-gray-400 dark:text-neutral-500">
+            Your consultant is researching opportunities. Grants will appear here once they start drafting applications.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visibleGrants.map((g) => {
+            const reviewLabel = getReviewLabel(g.reviewStatus);
+            return (
+              <div
+                key={g.id}
+                className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.funderName}</div>
+                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{g.grantName}</div>
+                  </div>
+                  {reviewLabel && (
+                    <span className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${reviewLabel.classes}`}>
+                      {reviewLabel.icon}
+                      {reviewLabel.text}
+                    </span>
+                  )}
+                </div>
+
+                {/* Evaluation data */}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {g.matchPct > 0 && (
+                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tabular-nums ${
+                      g.matchPct >= 85
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                        : g.matchPct >= 70
+                          ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                          : "bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400"
+                    }`}>
+                      {g.matchPct}% fit
+                    </span>
+                  )}
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
+                    {fmt$(g.avgGrant)} avg
+                  </span>
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
+                    Due {g.deadline}
+                  </span>
+                </div>
+
+                {/* Review CTA — show when answers are in_review */}
+                {g.reviewStatus === "in_review" && (
+                  <button
+                    onClick={() => setReviewingGrant(g)}
+                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                  >
+                    Review Draft Answers
+                  </button>
+                )}
+                {g.reviewStatus === "approved" && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                    <IconCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                      You approved these answers. Your consultant will submit the application.
+                    </span>
+                  </div>
+                )}
+                {g.reviewStatus === "changes_requested" && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 dark:border-orange-500/20 dark:bg-orange-500/5">
+                    <IconMessageDots className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
+                    <span className="text-xs font-medium text-orange-700 dark:text-orange-400">
+                      Changes requested — waiting for your consultant to revise.
+                    </span>
+                  </div>
+                )}
+                {g.status === "submitted" && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                    <IconSend className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                      Application submitted to the funder.
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Review modal */}
+      <AnimatePresence>
+        {reviewingGrant && org && (
+          <ApplicantReviewModal
+            grant={reviewingGrant}
+            ein={org.ein}
+            onClose={() => setReviewingGrant(null)}
+            onRefresh={() => {
+              onRefreshOrg();
+              setReviewingGrant(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+function getReviewLabel(rs?: ReviewStatus) {
+  if (!rs || rs === "draft") return null;
+  switch (rs) {
+    case "in_review":
+      return { text: "Needs Your Review", classes: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400", icon: null };
+    case "changes_requested":
+      return { text: "Changes Sent", classes: "bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400", icon: null };
+    case "approved":
+      return { text: "Approved", classes: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400", icon: <IconCheck className="h-3 w-3" /> };
+    case "submitted":
+      return { text: "Submitted", classes: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400", icon: <IconSend className="h-3 w-3" /> };
+    default:
+      return null;
+  }
+}
+
+/* ── Applicant Review Modal — approve or request changes ── */
+
+function ApplicantReviewModal({
+  grant,
+  ein,
+  onClose,
+  onRefresh,
+}: {
+  grant: PitchedGrant;
+  ein: number;
+  onClose: () => void;
+  onRefresh: () => void;
+}) {
+  const [comments, setComments] = useState<Record<number, string>>({});
+  const [mode, setMode] = useState<"review" | "commenting">("review");
+
+  const questions = GRANT_DATABASE.find((db) => db.funder === grant.funderName)?.applicationQuestions ?? [];
+  const answers = grant.answers ?? {};
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  const hasComments = Object.values(comments).some((c) => c.trim().length > 0);
+
+  const handleApprove = () => {
+    updatePitchedGrantReviewStatus(ein, grant.id, "approved");
+    onRefresh();
+  };
+
+  const handleRequestChanges = () => {
+    if (mode === "review") {
+      setMode("commenting");
+      return;
+    }
+    // Save comments and update status
+    updatePitchedGrantReviewComments(ein, grant.id, comments);
+    updatePitchedGrantReviewStatus(ein, grant.id, "changes_requested");
+    onRefresh();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 pt-[5vh] backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 8, scale: 0.97 }}
+        transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
+        className="flex w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
+        style={{ maxHeight: "85vh" }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5 dark:border-neutral-800">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-neutral-100">
+              Review Draft Answers
+            </h2>
+            <p className="mt-0.5 text-[11px] text-gray-400 dark:text-neutral-500">
+              {grant.funderName} · {grant.grantName}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+          >
+            <IconX className="h-4 w-4" />
+          </button>
+        </div>
+
+        {mode === "commenting" && (
+          <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 dark:border-orange-500/20 dark:bg-orange-500/5">
+            <span className="text-xs font-medium text-orange-700 dark:text-orange-400">
+              Add comments on the answers you want changed, then submit.
+            </span>
+          </div>
+        )}
+
+        {/* Questions and answers */}
+        <div className="flex-1 space-y-4 overflow-y-auto p-5">
+          {questions.map((q, i) => (
+            <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/50">
+              <div className="mb-2 flex items-start gap-2 text-xs font-medium text-gray-700 dark:text-neutral-300">
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[9px] font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400">
+                  {i + 1}
+                </span>
+                {q}
+              </div>
+              <div className="rounded-md bg-white px-3 py-2.5 text-sm leading-relaxed text-gray-700 dark:bg-neutral-900 dark:text-neutral-300">
+                {(answers[i] ?? "").trim() || (
+                  <span className="italic text-gray-300 dark:text-neutral-600">No answer yet</span>
+                )}
+              </div>
+              {/* Comment input — visible in commenting mode */}
+              {mode === "commenting" && (
+                <div className="mt-2">
+                  <textarea
+                    value={comments[i] ?? ""}
+                    onChange={(e) => setComments((prev) => ({ ...prev, [i]: e.target.value }))}
+                    placeholder="Add a comment on this answer (optional)…"
+                    rows={2}
+                    className="w-full rounded-lg border border-orange-200 bg-orange-50/30 px-3 py-2 text-xs text-gray-700 placeholder-gray-400 outline-none transition-colors focus:border-orange-300 focus:ring-2 focus:ring-orange-100 dark:border-orange-500/20 dark:bg-orange-500/5 dark:text-neutral-300 dark:placeholder-neutral-500 dark:focus:border-orange-500/40 dark:focus:ring-orange-500/10"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 px-5 py-3 dark:border-neutral-800">
+          <button
+            onClick={onClose}
+            className="mr-auto rounded-lg px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleRequestChanges}
+            disabled={mode === "commenting" && !hasComments}
+            className={`flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-medium transition-colors ${
+              mode === "commenting" && !hasComments
+                ? "cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-neutral-800 dark:text-neutral-600"
+                : "border border-orange-200 text-orange-600 hover:bg-orange-50 dark:border-orange-500/30 dark:text-orange-400 dark:hover:bg-orange-500/10"
+            }`}
+          >
+            <IconMessageDots className="h-3 w-3" />
+            {mode === "commenting" ? "Submit Changes" : "Request Changes"}
+          </button>
+          {mode === "review" && (
+            <button
+              onClick={handleApprove}
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+            >
+              <IconCheck className="h-3 w-3" /> Approve
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

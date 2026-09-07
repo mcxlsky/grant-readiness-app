@@ -17,6 +17,8 @@ export interface GrantListing {
   source: string;
   eligibility: string[];
   type: "Federal" | "Foundation" | "Corporate" | "State";
+  /** Typical application questions / sections for this grant */
+  applicationQuestions?: string[];
 }
 
 export const GRANT_DATABASE: GrantListing[] = [
@@ -32,6 +34,14 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)", "Education focus"],
     type: "Foundation",
+    applicationQuestions: [
+      "Describe your organization's theory of change for improving K-12 outcomes",
+      "What evidence-based strategies will the proposed project employ?",
+      "How will you measure student achievement gains?",
+      "Detail your plan for reaching underserved student populations",
+      "Provide a project budget with line-item justification",
+      "Describe your organization's capacity and relevant track record",
+    ],
   },
   {
     id: "gl_2",
@@ -45,6 +55,13 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)", "Health focus"],
     type: "Foundation",
+    applicationQuestions: [
+      "What social determinants of health does your project address?",
+      "Describe the community you serve and how you engaged them in program design",
+      "What are your measurable health outcomes and how will you track them?",
+      "How does your approach advance health equity?",
+      "Provide a sustainability plan beyond the grant period",
+    ],
   },
   {
     id: "gl_3",
@@ -58,6 +75,16 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Grants.gov",
     eligibility: ["501(c)(3)", "LEA or partner", "Education focus"],
     type: "Federal",
+    applicationQuestions: [
+      "Project abstract (max 1 page)",
+      "Statement of need with supporting data",
+      "Project narrative: goals, activities, timeline, and deliverables",
+      "Describe how the project provides well-rounded educational opportunities",
+      "Safe and healthy students plan",
+      "Technology access and effective use plan",
+      "Budget narrative with SF-424A form",
+      "Letters of support from LEA partners",
+    ],
   },
   {
     id: "gl_4",
@@ -71,10 +98,17 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)"],
     type: "Foundation",
+    applicationQuestions: [
+      "What is the civic engagement challenge your organization addresses?",
+      "Describe your strategy for strengthening democratic participation",
+      "How does your work center communities most affected by inequity?",
+      "Provide examples of policy or systems change your organization has achieved",
+      "Organizational budget and project budget",
+    ],
   },
   {
     id: "gl_5",
-    funder: "USDA NIFA",
+    funder: "USDA Community Food Projects",
     program: "Community Food Projects Competitive Grants",
     focus: ["Food Security", "Agriculture", "Community Development"],
     description: "Supports community-based food and agriculture projects that fight food insecurity through local solutions.",
@@ -84,6 +118,16 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Grants.gov",
     eligibility: ["501(c)(3)", "Food security focus"],
     type: "Federal",
+    applicationQuestions: [
+      "Project summary (max 250 words)",
+      "Describe food insecurity in your target community with data",
+      "Project narrative: objectives, methods, and expected outcomes",
+      "Community engagement and partnership plan",
+      "Self-sufficiency and sustainability plan",
+      "Logic model or theory of change",
+      "Budget justification (SF-424 required)",
+      "Letters of commitment from collaborating organizations",
+    ],
   },
   {
     id: "gl_6",
@@ -97,6 +141,13 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)", "Arts & culture focus"],
     type: "Foundation",
+    applicationQuestions: [
+      "How does your organization serve as a community anchor?",
+      "Describe your approach to equitable access in arts programming",
+      "What is the geographic and demographic reach of your programs?",
+      "Provide your strategic plan or organizational vision",
+      "Financial statements and project budget",
+    ],
   },
   {
     id: "gl_7",
@@ -110,6 +161,14 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Grants.gov",
     eligibility: ["501(c)(3)", "Aging services"],
     type: "Federal",
+    applicationQuestions: [
+      "Project abstract and statement of need",
+      "Describe current services to older adults in your area",
+      "Project work plan with goals, objectives, and activities",
+      "How will you identify and serve hard-to-reach populations?",
+      "Evaluation methodology and performance measures",
+      "Budget with line-item justification",
+    ],
   },
   {
     id: "gl_8",
@@ -123,6 +182,14 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)", "Education reform"],
     type: "Foundation",
+    applicationQuestions: [
+      "What is your model for improving educational outcomes?",
+      "How does your approach expand quality school options for families?",
+      "Describe your talent pipeline or leadership development strategy",
+      "What evidence supports the effectiveness of your approach?",
+      "How will you scale impact beyond the initial grant?",
+      "Project timeline and budget",
+    ],
   },
   {
     id: "gl_9",
@@ -136,6 +203,13 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Corporate Giving Database",
     eligibility: ["501(c)(3)", "Digital equity focus"],
     type: "Corporate",
+    applicationQuestions: [
+      "What digital divide challenge are you solving and for whom?",
+      "Describe your approach to device access, connectivity, or digital literacy",
+      "How many people will your project directly serve?",
+      "What metrics will you use to measure digital inclusion outcomes?",
+      "How will you sustain the project after funding ends?",
+    ],
   },
   {
     id: "gl_10",
@@ -149,6 +223,13 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)", "Education focus"],
     type: "Foundation",
+    applicationQuestions: [
+      "How does your project advance educational equity?",
+      "Describe your teacher development or system-change model",
+      "What student populations will benefit and how?",
+      "Provide evidence of past impact or a pilot phase",
+      "Project milestones and budget",
+    ],
   },
   {
     id: "gl_11",
@@ -162,6 +243,14 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Grants.gov",
     eligibility: ["501(c)(3)", "Arts organization"],
     type: "Federal",
+    applicationQuestions: [
+      "Project description: artistic vision, activities, and timeline",
+      "How does the project demonstrate artistic excellence or merit?",
+      "Describe how the project engages your community",
+      "What are the expected outcomes and how will you evaluate them?",
+      "Work samples (up to 3 items demonstrating past work)",
+      "Budget with NEA request and matching funds",
+    ],
   },
   {
     id: "gl_12",
@@ -175,6 +264,14 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)", "Child-serving"],
     type: "Foundation",
+    applicationQuestions: [
+      "What conditions are you creating for children to thrive?",
+      "How does your approach center racial equity?",
+      "Describe community engagement in program design and governance",
+      "What child-level outcomes do you expect and how will you measure them?",
+      "How does your work address family economic security?",
+      "Organizational capacity and leadership diversity",
+    ],
   },
   {
     id: "gl_13",
@@ -188,6 +285,15 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Grants.gov",
     eligibility: ["501(c)(3)", "Environmental justice"],
     type: "Federal",
+    applicationQuestions: [
+      "Project narrative: environmental justice issue, affected community, and proposed solution",
+      "Describe disproportionate environmental or health burdens in the target area",
+      "Community involvement plan",
+      "Partnerships and collaboration strategy",
+      "Measurable environmental and health outcomes",
+      "Quality assurance project plan",
+      "Budget and budget justification",
+    ],
   },
   {
     id: "gl_14",
@@ -201,6 +307,13 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Corporate Giving Database",
     eligibility: ["501(c)(3)", "Community development"],
     type: "Corporate",
+    applicationQuestions: [
+      "Describe your organization's approach to advancing economic mobility",
+      "What impact has your organization had in the past 3 years?",
+      "How will this award support leadership development at your organization?",
+      "Identify two leaders who would participate in the leadership program",
+      "Community impact statement",
+    ],
   },
   {
     id: "gl_15",
@@ -214,6 +327,13 @@ export const GRANT_DATABASE: GrantListing[] = [
     source: "Foundation Directory Online",
     eligibility: ["501(c)(3)", "Justice reform"],
     type: "Foundation",
+    applicationQuestions: [
+      "What is your strategy for reducing incarceration or advancing community safety?",
+      "Describe your place-based approach and target geography",
+      "How does your work center the voices of directly impacted communities?",
+      "Provide data on outcomes achieved or expected",
+      "Organizational budget and project budget",
+    ],
   },
 ];
 

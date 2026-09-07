@@ -50,7 +50,7 @@ export interface DbOrganization {
   city: string;
   state: string;
   ntee_code: string;
-  stage: "intake" | "assessed" | "fixing" | "ready";
+  stage: "intake" | "assessed" | "fixing" | "ready" | "prospecting" | "writing" | "submitted";
   added_at: string;
   analyzed_at: string | null;
   analysis_data: AnalysisData | null;

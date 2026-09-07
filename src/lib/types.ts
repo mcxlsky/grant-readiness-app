@@ -75,7 +75,55 @@ export interface AnalysisData {
   websiteUrl: string;
 }
 
-export type Stage = "intake" | "assessed" | "fixing" | "ready";
+export type Stage = "intake" | "assessed" | "fixing" | "ready" | "prospecting" | "writing" | "submitted";
+
+/** Stages that live in the free Inbox */
+export const INBOX_STAGES: Stage[] = ["intake", "assessed", "fixing", "ready"];
+
+/** Stages that live in the paid Pipeline */
+export type PipelineStage = "prospecting" | "writing" | "submitted";
+export const PIPELINE_ORG_STAGES: { key: PipelineStage; label: string; description: string }[] = [
+  { key: "prospecting", label: "Prospecting", description: "Finding and evaluating grants" },
+  { key: "writing", label: "Writing", description: "Drafting grant applications" },
+  { key: "submitted", label: "Submitted", description: "Awaiting decisions & outcomes" },
+];
+
+/* ── Pitched grants (consultant attaches grants to a pipeline org) ── */
+
+export type GrantStatus = "prospect" | "researching" | "writing" | "submitted" | "awarded" | "declined";
+
+/** Review status tracks the consultant ↔ applicant collaboration on draft answers */
+export type ReviewStatus = "draft" | "in_review" | "changes_requested" | "approved" | "submitted";
+
+export const GRANT_STATUS_META: { key: GrantStatus; label: string; color: string }[] = [
+  { key: "prospect", label: "Prospect", color: "blue" },
+  { key: "researching", label: "Researching", color: "violet" },
+  { key: "writing", label: "Writing", color: "amber" },
+  { key: "submitted", label: "Submitted", color: "emerald" },
+  { key: "awarded", label: "Awarded", color: "green" },
+  { key: "declined", label: "Declined", color: "red" },
+];
+
+export interface PitchedGrant {
+  id: string;
+  grantName: string;
+  funderName: string;
+  type: string;
+  matchPct: number;
+  status: GrantStatus;
+  deadline: string;
+  avgGrant: number;
+  grantRange: [number, number];
+  notes: string;
+  addedAt: number;
+  url: string;
+  /** Draft answers keyed by question index */
+  answers?: Record<number, string>;
+  /** Tracks consultant ↔ applicant review collaboration */
+  reviewStatus?: ReviewStatus;
+  /** Applicant comments on specific answers, keyed by question index */
+  reviewComments?: Record<number, string>;
+}
 
 export interface PortfolioOrg {
   ein: number;
@@ -88,6 +136,8 @@ export interface PortfolioOrg {
   addedAt: number;
   analyzedAt?: number;
   analysisData: AnalysisData | null;
+  /** Grants the consultant is pitching/working for this org */
+  pitchedGrants?: PitchedGrant[];
 }
 
 export const STAGES: { key: Stage; label: string }[] = [
@@ -95,6 +145,9 @@ export const STAGES: { key: Stage; label: string }[] = [
   { key: "assessed", label: "Assessing" },
   { key: "fixing", label: "Building" },
   { key: "ready", label: "Grant-Ready" },
+  { key: "prospecting", label: "Prospecting" },
+  { key: "writing", label: "Writing" },
+  { key: "submitted", label: "Submitted" },
 ];
 
 export const STAGE_LABEL: Record<Stage, string> = {
@@ -102,14 +155,18 @@ export const STAGE_LABEL: Record<Stage, string> = {
   assessed: "Assessing",
   fixing: "Building",
   ready: "Grant-Ready",
+  prospecting: "Prospecting",
+  writing: "Writing",
+  submitted: "Submitted",
 };
 
 /* ── Grant Application (applicant-facing form) ────────── */
 
-export type AppStatus = "new" | "reviewing" | "approved" | "declined" | "info_needed";
+export type AppStatus = "new" | "pending" | "reviewing" | "approved" | "declined" | "info_needed";
 
 export const APP_STATUSES: { key: AppStatus; label: string; color: string }[] = [
   { key: "new", label: "New", color: "#6366f1" },
+  { key: "pending", label: "Pending", color: "#3b82f6" },
   { key: "reviewing", label: "Reviewing", color: "#f59e0b" },
   { key: "info_needed", label: "Info Needed", color: "#8b5cf6" },
   { key: "approved", label: "Approved", color: "#22c55e" },
