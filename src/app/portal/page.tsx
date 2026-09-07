@@ -474,43 +474,40 @@ function PortalContent() {
 /* ── Overview panel ───────────────────────────────────── */
 
 function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: PortfolioOrg | null; onNavigate: (v: PortalView) => void; onUnlock: () => void }) {
-  const milestones = getMilestones(org);
+  const inPipeline = org && (org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted");
+  const pitched = org?.pitchedGrants ?? [];
+  const readiness = org?.analysisData?.readiness;
+  const isReady = readiness && (readiness.tier === "Grant-Ready" || readiness.tier === "Strong");
 
   // Derive action items from failing readiness checks
   const actionItems: { title: string; category: string; priority: "high" | "medium" | "low" }[] = [];
-
   if (org?.analysisData) {
-    const { readiness, actionItems: consultantItems } = org.analysisData;
-
-    // Add consultant-defined action items (from the analysis)
+    const { readiness: r, actionItems: consultantItems } = org.analysisData;
     for (const item of consultantItems) {
-      actionItems.push({
-        title: item.action,
-        category: item.category,
-        priority: item.priority,
-      });
+      actionItems.push({ title: item.action, category: item.category, priority: item.priority });
     }
-
-    // If no consultant items, derive from failing readiness checks
     if (actionItems.length === 0) {
-      const sections = [
-        { name: "Financial", data: readiness.financial },
-        { name: "Compliance", data: readiness.compliance },
-        { name: "Digital Presence", data: readiness.digital },
-      ];
-      for (const section of sections) {
+      for (const section of [
+        { name: "Financial", data: r.financial },
+        { name: "Compliance", data: r.compliance },
+        { name: "Digital Presence", data: r.digital },
+      ]) {
         for (const [label, pass] of section.data.checks) {
-          if (!pass) {
-            actionItems.push({
-              title: label,
-              category: section.name,
-              priority: "medium",
-            });
-          }
+          if (!pass) actionItems.push({ title: label, category: section.name, priority: "medium" });
         }
       }
     }
   }
+
+  // Pipeline stats
+  const needsReview = pitched.filter((g) => g.reviewStatus === "in_review");
+  const changesRequested = pitched.filter((g) => g.reviewStatus === "changes_requested");
+  const approved = pitched.filter((g) => g.reviewStatus === "approved");
+  const activeGrants = pitched.filter((g) => g.status !== "declined");
+  const upcomingDeadlines = activeGrants
+    .filter((g) => g.deadline)
+    .sort((a, b) => (a.deadline! > b.deadline! ? 1 : -1))
+    .slice(0, 3);
 
   return (
     <>
@@ -521,197 +518,231 @@ function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: Por
         Here&apos;s where things stand with {app.orgName}.
       </p>
 
-      {/* Readiness score — instant feedback from automated assessment */}
-      {org?.analysisData?.readiness && (() => {
-        const r = org.analysisData!.readiness;
-        const pct = r.overall;
-        const isReady = r.tier === "Grant-Ready" || r.tier === "Strong";
-        const tierColor = isReady
-          ? "text-emerald-600 dark:text-emerald-400"
-          : pct >= 50
-          ? "text-amber-600 dark:text-amber-400"
-          : "text-red-600 dark:text-red-400";
-        const ringColor = isReady
-          ? "stroke-emerald-500"
-          : pct >= 50
-          ? "stroke-amber-500"
-          : "stroke-red-500";
-        const sections = [
-          { label: "Financial", score: r.financial.score },
-          { label: "Compliance", score: r.compliance.score },
-          { label: "Digital Presence", score: r.digital.score },
-        ];
-        return (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex items-center gap-5">
-              {/* Circular score */}
-              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
-                <svg className="h-20 w-20 -rotate-90" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
-                    className="stroke-gray-100 dark:stroke-neutral-800" />
-                  <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeDasharray={`${(pct / 100) * 188.5} 188.5`}
-                    className={ringColor} />
-                </svg>
-                <span className="absolute text-lg font-bold text-gray-900 dark:text-white">{pct}</span>
+      {inPipeline ? (
+        /* ── IN-PIPELINE VIEW: activity-focused ──────────── */
+        <>
+          {/* Needs attention — reviews waiting on applicant */}
+          {(needsReview.length > 0 || changesRequested.length > 0) && (
+            <div className="mb-4 space-y-2">
+              {needsReview.map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => onNavigate("grants")}
+                  className="flex w-full items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left transition-colors hover:bg-blue-100 dark:border-blue-800/50 dark:bg-blue-500/10 dark:hover:bg-blue-500/15"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500">
+                    <IconFileText className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">Review draft answers</div>
+                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400 truncate">{g.funderName} — {g.grantName}</div>
+                  </div>
+                  <IconArrowRight className="h-4 w-4 shrink-0 text-blue-500" />
+                </button>
+              ))}
+              {changesRequested.map((g) => (
+                <div
+                  key={g.id}
+                  className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/50 dark:bg-amber-500/10"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500">
+                    <IconMessageDots className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">Changes requested</div>
+                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400 truncate">{g.funderName} — your consultant is revising</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pipeline snapshot */}
+          <div className="mb-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+              Pipeline
+            </h3>
+            {activeGrants.length > 0 ? (
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: "Prospecting", count: pitched.filter((g) => g.status === "prospect" || g.status === "researching").length, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
+                  { label: "Writing", count: pitched.filter((g) => g.status === "writing").length, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10" },
+                  { label: "Submitted", count: pitched.filter((g) => g.status === "submitted" || g.status === "awarded").length, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+                ].map((col) => (
+                  <div key={col.label} className={`rounded-lg ${col.bg} p-3 text-center`}>
+                    <div className={`text-lg font-bold ${col.color}`}>{col.count}</div>
+                    <div className="text-[10px] font-medium text-gray-500 dark:text-neutral-500">{col.label}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 dark:text-neutral-500">
+                Your consultant is researching grant opportunities for you.
+              </p>
+            )}
+          </div>
+
+          {/* Upcoming deadlines */}
+          {upcomingDeadlines.length > 0 && (
+            <div className="mb-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+                Upcoming Deadlines
+              </h3>
+              <div className="space-y-2.5">
+                {upcomingDeadlines.map((g) => (
+                  <div key={g.id} className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-gray-800 dark:text-neutral-200">{g.funderName}</div>
+                      <div className="text-[10px] text-gray-400 dark:text-neutral-500">{g.grantName}</div>
+                    </div>
+                    <span className="ml-3 shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
+                      {g.deadline}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Approved grants — positive signal */}
+          {approved.length > 0 && (
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/50 dark:bg-emerald-500/10">
+              <div className="flex items-center gap-2">
+                <IconCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  {approved.length} proposal{approved.length > 1 ? "s" : ""} approved and ready to submit
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Compact readiness score — collapsed, not the hero */}
+          {readiness && (
+            <div className="rounded-xl border border-gray-200 bg-white px-5 py-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+                    <svg className="h-10 w-10 -rotate-90" viewBox="0 0 72 72">
+                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
+                        className="stroke-gray-100 dark:stroke-neutral-800" />
+                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
+                        strokeLinecap="round"
+                        strokeDasharray={`${(readiness.overall / 100) * 188.5} 188.5`}
+                        className="stroke-emerald-500" />
+                    </svg>
+                    <span className="absolute text-[10px] font-bold text-gray-900 dark:text-white">{readiness.overall}</span>
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-gray-600 dark:text-neutral-300">Readiness Score</div>
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400">{readiness.tier}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        /* ── PRE-PIPELINE VIEW: score + action items + unlock ── */
+        <>
+          {/* Readiness score — hero when not in pipeline */}
+          {readiness && (() => {
+            const pct = readiness.overall;
+            const tierColor = isReady
+              ? "text-emerald-600 dark:text-emerald-400"
+              : pct >= 50
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-red-600 dark:text-red-400";
+            const ringColor = isReady
+              ? "stroke-emerald-500"
+              : pct >= 50
+              ? "stroke-amber-500"
+              : "stroke-red-500";
+            const sections = [
+              { label: "Financial", score: readiness.financial.score },
+              { label: "Compliance", score: readiness.compliance.score },
+              { label: "Digital Presence", score: readiness.digital.score },
+            ];
+            return (
+              <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="flex items-center gap-5">
+                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
+                    <svg className="h-20 w-20 -rotate-90" viewBox="0 0 72 72">
+                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
+                        className="stroke-gray-100 dark:stroke-neutral-800" />
+                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
+                        strokeLinecap="round"
+                        strokeDasharray={`${(pct / 100) * 188.5} 188.5`}
+                        className={ringColor} />
+                    </svg>
+                    <span className="absolute text-lg font-bold text-gray-900 dark:text-white">{pct}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-sm font-semibold ${tierColor}`}>{readiness.tier}</div>
+                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">Grant Readiness Score</div>
+                    <div className="mt-3 space-y-1.5">
+                      {sections.map((s) => (
+                        <div key={s.label} className="flex items-center gap-2">
+                          <span className="w-24 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.label}</span>
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-800">
+                            <div
+                              className={`h-full rounded-full ${s.score >= 70 ? "bg-emerald-500" : s.score >= 40 ? "bg-amber-500" : "bg-red-500"}`}
+                              style={{ width: `${s.score}%` }}
+                            />
+                          </div>
+                          <span className="w-6 text-right text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.score}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Unlock CTA — shown when Grant-Ready but not yet in pipeline */}
+          {isReady && (
+            <button
+              onClick={onUnlock}
+              className="mb-6 flex w-full items-center gap-4 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50 p-5 text-left transition-colors hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-800/50 dark:from-indigo-500/10 dark:to-violet-500/10 dark:hover:border-indigo-700/50 dark:hover:from-indigo-500/15 dark:hover:to-violet-500/15"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 dark:bg-indigo-500">
+                <IconSparkles className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className={`text-sm font-semibold ${tierColor}`}>{r.tier}</div>
-                <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">
-                  Grant Readiness Score
-                </div>
-                {/* Section bars */}
-                <div className="mt-3 space-y-1.5">
-                  {sections.map((s) => (
-                    <div key={s.label} className="flex items-center gap-2">
-                      <span className="w-24 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.label}</span>
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-800">
-                        <div
-                          className={`h-full rounded-full ${
-                            s.score >= 70
-                              ? "bg-emerald-500"
-                              : s.score >= 40
-                              ? "bg-amber-500"
-                              : "bg-red-500"
-                          }`}
-                          style={{ width: `${s.score}%` }}
-                        />
-                      </div>
-                      <span className="w-6 text-right text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.score}</span>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">Ready to start winning grants?</div>
+                <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">Unlock grant prospecting, proposal support, and pipeline management.</div>
+              </div>
+              <IconArrowRight className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+            </button>
+          )}
+
+          {/* Action items — only when there are items to show */}
+          {actionItems.length > 0 && (
+            <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+                Action Items
+              </h3>
+              <div className="space-y-2">
+                {actionItems.map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/50">
+                    <div className={`mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 ${
+                      item.priority === "high"
+                        ? "border-red-400 dark:border-red-500"
+                        : item.priority === "medium"
+                        ? "border-amber-400 dark:border-amber-500"
+                        : "border-gray-300 dark:border-neutral-600"
+                    }`} />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-800 dark:text-neutral-200">{item.title}</div>
+                      <div className="mt-0.5 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{item.category}</div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        );
-      })()}
-
-      {/* Unlock CTA — shown when Grant-Ready but not yet in pipeline */}
-      {org?.analysisData?.readiness && (() => {
-        const r = org.analysisData!.readiness;
-        const isReady = r.tier === "Grant-Ready" || r.tier === "Strong";
-        const inPipeline = org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted";
-        if (!isReady || inPipeline) return null;
-        return (
-          <button
-            onClick={onUnlock}
-            className="mb-6 flex w-full items-center gap-4 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50 p-5 text-left transition-colors hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-800/50 dark:from-indigo-500/10 dark:to-violet-500/10 dark:hover:border-indigo-700/50 dark:hover:from-indigo-500/15 dark:hover:to-violet-500/15"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 dark:bg-indigo-500">
-              <IconSparkles className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                Ready to start winning grants?
-              </div>
-              <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
-                Unlock grant prospecting, proposal support, and pipeline management.
-              </div>
-            </div>
-            <IconArrowRight className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
-          </button>
-        );
-      })()}
-
-      {/* Action items — lead with these when they exist */}
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-        <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-          Action Items
-        </h3>
-        {actionItems.length > 0 ? (
-          <div className="space-y-2">
-            {actionItems.map((item, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/50">
-                <div className={`mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 ${
-                  item.priority === "high"
-                    ? "border-red-400 dark:border-red-500"
-                    : item.priority === "medium"
-                    ? "border-amber-400 dark:border-amber-500"
-                    : "border-gray-300 dark:border-neutral-600"
-                }`} />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-800 dark:text-neutral-200">{item.title}</div>
-                  <div className="mt-0.5 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{item.category}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center py-3 text-center">
-            <IconListCheck className="mb-2 h-5 w-5 text-gray-200 dark:text-neutral-700" />
-            <p className="text-sm text-gray-400 dark:text-neutral-500">
-              No action items yet
-            </p>
-            <p className="mt-0.5 text-xs text-gray-300 dark:text-neutral-600">
-              Your consultant will assign tasks here as you work through the program.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* What's next — upcoming milestones */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-          What&apos;s Next
-        </h3>
-        <div className="space-y-0">
-          {milestones.map((m, i) => (
-            <div key={i} className="flex gap-3">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                    m.done
-                      ? "border-emerald-500 bg-emerald-500"
-                      : m.current
-                      ? "border-indigo-500 bg-indigo-500"
-                      : "border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-900"
-                  }`}
-                >
-                  {m.done ? (
-                    <IconCheck className="h-3.5 w-3.5 text-white" />
-                  ) : m.current ? (
-                    <div className="h-2 w-2 rounded-full bg-white" />
-                  ) : (
-                    <div className="h-2 w-2 rounded-full bg-gray-200 dark:bg-neutral-700" />
-                  )}
-                </div>
-                {i < milestones.length - 1 && (
-                  <div
-                    className={`w-0.5 flex-1 ${
-                      m.done
-                        ? "bg-emerald-500"
-                        : "bg-gray-200 dark:bg-neutral-700"
-                    }`}
-                    style={{ minHeight: 32 }}
-                  />
-                )}
-              </div>
-              <div className="pb-6">
-                <div
-                  className={`text-sm font-medium ${
-                    m.done || m.current
-                      ? "text-gray-900 dark:text-white"
-                      : "text-gray-400 dark:text-neutral-600"
-                  }`}
-                >
-                  {m.title}
-                </div>
-                <div
-                  className={`mt-0.5 text-xs ${
-                    m.done || m.current
-                      ? "text-gray-500 dark:text-neutral-400"
-                      : "text-gray-300 dark:text-neutral-700"
-                  }`}
-                >
-                  {m.description}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+          )}
+        </>
+      )}
     </>
   );
 }
