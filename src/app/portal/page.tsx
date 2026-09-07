@@ -27,7 +27,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { loadApplications, loadApplicationDocuments } from "@/lib/applications";
 import { loadPortfolio, updatePitchedGrantReviewStatus, updatePitchedGrantReviewComments } from "@/lib/portfolio";
 import { GRANT_DATABASE } from "@/lib/grant-database";
-import { fmt$ } from "@/lib/utils";
+import { cn, fmt$ } from "@/lib/utils";
 import { formatFileSize, DOCUMENT_CATEGORIES } from "@/lib/file-utils";
 import type { GrantApplication, AppStatus, PortfolioOrg, UploadedFile, PitchedGrant, ReviewStatus } from "@/lib/types";
 import { PaywallModal } from "@/components/paywall-modal";
@@ -519,123 +519,122 @@ function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: Por
       </p>
 
       {inPipeline ? (
-        /* ── IN-PIPELINE VIEW: activity-focused ──────────── */
+        /* ── IN-PIPELINE VIEW: grant-by-grant activity ───── */
         <>
-          {/* Needs attention — reviews waiting on applicant */}
-          {(needsReview.length > 0 || changesRequested.length > 0) && (
-            <div className="mb-4 space-y-2">
-              {needsReview.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => onNavigate("grants")}
-                  className="flex w-full items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left transition-colors hover:bg-blue-100 dark:border-blue-800/50 dark:bg-blue-500/10 dark:hover:bg-blue-500/15"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500">
-                    <IconFileText className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">Review draft answers</div>
-                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400 truncate">{g.funderName} — {g.grantName}</div>
-                  </div>
-                  <IconArrowRight className="h-4 w-4 shrink-0 text-blue-500" />
-                </button>
-              ))}
-              {changesRequested.map((g) => (
-                <div
-                  key={g.id}
-                  className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/50 dark:bg-amber-500/10"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500">
-                    <IconMessageDots className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">Changes requested</div>
-                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400 truncate">{g.funderName} — your consultant is revising</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pipeline snapshot */}
-          <div className="mb-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-              Pipeline
-            </h3>
-            {activeGrants.length > 0 ? (
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: "Prospecting", count: pitched.filter((g) => g.status === "prospect" || g.status === "researching").length, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
-                  { label: "Writing", count: pitched.filter((g) => g.status === "writing").length, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10" },
-                  { label: "Submitted", count: pitched.filter((g) => g.status === "submitted" || g.status === "awarded").length, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
-                ].map((col) => (
-                  <div key={col.label} className={`rounded-lg ${col.bg} p-3 text-center`}>
-                    <div className={`text-lg font-bold ${col.color}`}>{col.count}</div>
-                    <div className="text-[10px] font-medium text-gray-500 dark:text-neutral-500">{col.label}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400 dark:text-neutral-500">
-                Your consultant is researching grant opportunities for you.
+          {/* Status line */}
+          {activeGrants.length > 0 ? (() => {
+            const parts: string[] = [];
+            const prospCount = pitched.filter((g) => g.status === "prospect" || g.status === "researching").length;
+            const writeCount = pitched.filter((g) => g.status === "writing").length;
+            const subCount = pitched.filter((g) => g.status === "submitted" || g.status === "awarded").length;
+            if (prospCount > 0) parts.push(`researching ${prospCount}`);
+            if (writeCount > 0) parts.push(`writing ${writeCount}`);
+            if (subCount > 0) parts.push(`${subCount} submitted`);
+            return (
+              <p className="mb-4 text-sm text-gray-500 dark:text-neutral-400">
+                Your consultant is {parts.length > 0 ? parts.join(", ") : "getting started"} — {activeGrants.length} grant{activeGrants.length !== 1 ? "s" : ""} total.
               </p>
-            )}
-          </div>
+            );
+          })() : (
+            <p className="mb-4 text-sm text-gray-500 dark:text-neutral-400">
+              Your consultant is researching grant opportunities for you.
+            </p>
+          )}
 
-          {/* Upcoming deadlines */}
-          {upcomingDeadlines.length > 0 && (
-            <div className="mb-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-                Upcoming Deadlines
-              </h3>
-              <div className="space-y-2.5">
-                {upcomingDeadlines.map((g) => (
-                  <div key={g.id} className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-gray-800 dark:text-neutral-200">{g.funderName}</div>
-                      <div className="text-[10px] text-gray-400 dark:text-neutral-500">{g.grantName}</div>
+          {/* Grant cards — each active grant as one row */}
+          {activeGrants.length > 0 && (
+            <div className="mb-4 space-y-2">
+              {activeGrants
+                .sort((a, b) => {
+                  // Needs-attention first, then by status progress
+                  const attnScore = (g: PitchedGrant) =>
+                    g.reviewStatus === "in_review" ? 0 : g.reviewStatus === "changes_requested" ? 1 : 10;
+                  const statusScore: Record<string, number> = { prospect: 0, researching: 1, writing: 2, submitted: 3, awarded: 4 };
+                  const d = attnScore(a) - attnScore(b);
+                  return d !== 0 ? d : (statusScore[b.status] ?? 0) - (statusScore[a.status] ?? 0);
+                })
+                .map((g) => {
+                  const statusMeta: Record<string, { label: string; color: string; bg: string }> = {
+                    prospect: { label: "Researching", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
+                    researching: { label: "Researching", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
+                    writing: { label: "Drafting", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10" },
+                    submitted: { label: "Submitted", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+                    awarded: { label: "Awarded", color: "text-green-700 dark:text-green-400", bg: "bg-green-50 dark:bg-green-500/10" },
+                  };
+                  const meta = statusMeta[g.status] ?? statusMeta.prospect;
+
+                  // Review overlay
+                  const needsYourReview = g.reviewStatus === "in_review";
+                  const revising = g.reviewStatus === "changes_requested";
+                  const isApproved = g.reviewStatus === "approved";
+
+                  return (
+                    <div
+                      key={g.id}
+                      className={cn(
+                        "rounded-xl border p-4 transition-colors",
+                        needsYourReview
+                          ? "border-blue-200 bg-blue-50/50 dark:border-blue-800/50 dark:bg-blue-500/5"
+                          : "border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{g.funderName}</div>
+                          <div className="mt-0.5 text-[11px] text-gray-400 dark:text-neutral-500 truncate">{g.grantName}</div>
+                        </div>
+                        <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", meta.bg, meta.color)}>
+                          {meta.label}
+                        </span>
+                      </div>
+
+                      {/* Context row — deadline + review status */}
+                      <div className="mt-2.5 flex items-center gap-3 text-[11px]">
+                        {g.deadline && (
+                          <span className="text-gray-400 dark:text-neutral-500">Due {g.deadline}</span>
+                        )}
+                        {g.matchPct > 0 && (
+                          <span className="text-gray-400 dark:text-neutral-500">{g.matchPct}% fit</span>
+                        )}
+                        {needsYourReview && (
+                          <button
+                            onClick={() => onNavigate("grants")}
+                            className="ml-auto font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                          >
+                            Review draft →
+                          </button>
+                        )}
+                        {revising && (
+                          <span className="ml-auto font-medium text-amber-600 dark:text-amber-400">Consultant revising</span>
+                        )}
+                        {isApproved && (
+                          <span className="ml-auto font-medium text-emerald-600 dark:text-emerald-400">✓ Approved</span>
+                        )}
+                      </div>
                     </div>
-                    <span className="ml-3 shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
-                      {g.deadline}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  );
+                })}
             </div>
           )}
 
-          {/* Approved grants — positive signal */}
-          {approved.length > 0 && (
-            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/50 dark:bg-emerald-500/10">
-              <div className="flex items-center gap-2">
-                <IconCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                  {approved.length} proposal{approved.length > 1 ? "s" : ""} approved and ready to submit
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Compact readiness score — collapsed, not the hero */}
+          {/* Compact readiness score */}
           {readiness && (
             <div className="rounded-xl border border-gray-200 bg-white px-5 py-3.5 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
-                    <svg className="h-10 w-10 -rotate-90" viewBox="0 0 72 72">
-                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
-                        className="stroke-gray-100 dark:stroke-neutral-800" />
-                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
-                        strokeLinecap="round"
-                        strokeDasharray={`${(readiness.overall / 100) * 188.5} 188.5`}
-                        className="stroke-emerald-500" />
-                    </svg>
-                    <span className="absolute text-[10px] font-bold text-gray-900 dark:text-white">{readiness.overall}</span>
-                  </div>
-                  <div>
-                    <div className="text-xs font-medium text-gray-600 dark:text-neutral-300">Readiness Score</div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400">{readiness.tier}</div>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+                  <svg className="h-10 w-10 -rotate-90" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
+                      className="stroke-gray-100 dark:stroke-neutral-800" />
+                    <circle cx="36" cy="36" r="30" fill="none" strokeWidth="5"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(readiness.overall / 100) * 188.5} 188.5`}
+                      className="stroke-emerald-500" />
+                  </svg>
+                  <span className="absolute text-[10px] font-bold text-gray-900 dark:text-white">{readiness.overall}</span>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-gray-600 dark:text-neutral-300">Readiness Score</div>
+                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400">{readiness.tier}</div>
                 </div>
               </div>
             </div>
