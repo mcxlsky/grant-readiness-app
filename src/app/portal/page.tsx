@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   IconSearch,
@@ -21,6 +21,7 @@ import {
   IconTargetArrow,
   IconSend,
   IconMessageDots,
+  IconPlus,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -149,12 +150,11 @@ function getMilestones(org: PortfolioOrg | null): Milestone[] {
 
 /* ── Sidebar nav items ────────────────────────────────── */
 
-type PortalView = "programs" | "org" | "documents" | "messages" | "help";
+type PortalView = "programs" | "org" | "documents" | "help";
 
 const NAV_ITEMS: { id: PortalView; label: string; icon: typeof IconLayoutDashboard }[] = [
   { id: "programs", label: "Programs", icon: IconTargetArrow },
   { id: "org", label: "Organization", icon: IconLayoutDashboard },
-  { id: "messages", label: "Messages", icon: IconMessageCircle },
 ];
 
 /* ── Wrapper for Suspense (useSearchParams requires it) ── */
@@ -497,7 +497,6 @@ function PortalContent() {
                 {view === "programs" && <ProgramsPanel app={app} org={org} onRefreshOrg={() => setOrg(resolveOrg(app))} />}
                 {view === "org" && <OrgPanel app={app} org={org} onUnlock={() => setPaywallOpen(true)} />}
                 {view === "documents" && <DocumentsPanel app={app} />}
-                {view === "messages" && <MessagesPanel />}
                 {view === "help" && <HelpPanel />}
               </motion.div>
             </AnimatePresence>
@@ -507,23 +506,35 @@ function PortalContent() {
 
       {/* Mobile bottom nav */}
       <nav className="flex shrink-0 items-center justify-around border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-neutral-800 dark:bg-neutral-900 md:hidden">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.map((item, idx) => {
           const Icon = item.icon;
           const active = view === item.id;
           return (
-            <button
-              key={item.id}
-              onClick={() => setView(item.id)}
-              className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors",
-                active
-                  ? "text-indigo-600 dark:text-indigo-400"
-                  : "text-gray-400 dark:text-neutral-500"
+            <React.Fragment key={item.id}>
+              <button
+                onClick={() => setView(item.id)}
+                className={cn(
+                  "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors",
+                  active
+                    ? "text-indigo-600 dark:text-indigo-400"
+                    : "text-gray-400 dark:text-neutral-500"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                {item.label}
+              </button>
+              {/* Add program button between the two tabs */}
+              {idx === 0 && (
+                <Link
+                  href="/get-started"
+                  className="flex flex-col items-center justify-center py-1.5"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                    <IconPlus className="h-5 w-5" />
+                  </span>
+                </Link>
               )}
-            >
-              <Icon className="h-5 w-5" />
-              {item.label}
-            </button>
+            </React.Fragment>
           );
         })}
       </nav>
