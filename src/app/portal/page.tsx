@@ -427,27 +427,6 @@ function PortalContent() {
         </div>
       </div>
 
-      {/* Mobile tab strip */}
-      <div className="flex shrink-0 gap-1 border-b border-gray-200 bg-white px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900 md:hidden">
-        {NAV_ITEMS.map((item) => {
-          const active = view === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setView(item.id)}
-              className={cn(
-                "rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
-                active
-                  ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                  : "text-gray-500 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
-              )}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
-
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — desktop */}
         <aside className="hidden w-[220px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
@@ -525,6 +504,29 @@ function PortalContent() {
           </div>
         </main>
       </div>
+
+      {/* Mobile bottom nav */}
+      <nav className="flex shrink-0 items-center justify-around border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-neutral-800 dark:bg-neutral-900 md:hidden">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const active = view === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors",
+                active
+                  ? "text-indigo-600 dark:text-indigo-400"
+                  : "text-gray-400 dark:text-neutral-500"
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
 
       {/* Paywall modal */}
       {app && org?.analysisData?.readiness && (
