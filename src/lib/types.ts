@@ -106,6 +106,8 @@ export const GRANT_STATUS_META: { key: GrantStatus; label: string; color: string
 
 export interface PitchedGrant {
   id: string;
+  /** Links this grant to a specific program application */
+  applicationId?: string;
   grantName: string;
   funderName: string;
   type: string;

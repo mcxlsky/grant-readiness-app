@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback, type KeyboardEvent } from "react";
+import { useState, useRef, useCallback, useEffect, Suspense, type KeyboardEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   IconArrowLeft,
@@ -436,6 +437,17 @@ function TagInput({
 /* ── Page ──────────────────────────────────────────────── */
 
 export default function GetStartedPage() {
+  return (
+    <Suspense>
+      <GetStartedContent />
+    </Suspense>
+  );
+}
+
+function GetStartedContent() {
+  const searchParams = useSearchParams();
+  const fromEmail = searchParams.get("email") || "";
+  const fromPortal = !!fromEmail;
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
@@ -458,7 +470,7 @@ export default function GetStartedPage() {
     numberServed: "",
     numberServedUnit: "people",
     contactName: "",
-    contactEmail: "",
+    contactEmail: fromEmail,
     contactPhone: "",
     contactTitle: "",
     projectTitle: "",
@@ -479,7 +491,7 @@ export default function GetStartedPage() {
   const [geoTags, setGeoTags] = useState<string[]>([]);
   const [documents, setDocuments] = useState<UploadedFile[]>([]);
   const [grantRfpFile, setGrantRfpFile] = useState<UploadedFile | null>(null);
-  const [docCategory, setDocCategory] = useState("other");
+  const [docCategory, setDocCategory] = useState("");
 
   /* ── Setters ────────────────────────────────── */
 
@@ -566,7 +578,7 @@ export default function GetStartedPage() {
         break;
       }
       try {
-        const uploaded = await processFileUpload(file, docCategory);
+        const uploaded = await processFileUpload(file, docCategory || "other");
         setDocuments((prev) => [...prev, uploaded]);
       } catch {
         setFileError(`Failed to read "${file.name}". Please try again.`);
@@ -733,14 +745,14 @@ export default function GetStartedPage() {
       <div className="sticky top-0 z-10 shrink-0 border-b border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-3">
           <Link
-            href="/"
+            href={fromPortal ? `/portal?email=${encodeURIComponent(fromEmail)}` : "/"}
             className="flex items-center gap-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300"
           >
             <IconArrowLeft className="h-3.5 w-3.5" />
             <div className="flex items-center gap-1.5">
               <div className="h-4 w-5 shrink-0 rounded-tl-md rounded-tr-sm rounded-br-md rounded-bl-sm bg-indigo-500" />
               <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                Ready Set Grants
+                {fromPortal ? "Back to Portal" : "Ready Set Grants"}
               </span>
             </div>
           </Link>
@@ -1410,6 +1422,7 @@ function StepExtras({
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="flex-1">
                 <select value={docCategory} onChange={(e) => setDocCategory(e.target.value)} className={selectClsErr()}>
+                  <option value="" disabled>Select type…</option>
                   {DOCUMENT_CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
