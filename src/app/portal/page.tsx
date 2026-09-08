@@ -451,6 +451,13 @@ function PortalContent() {
                 );
               })}
             </nav>
+            <Link
+              href={`/get-started?email=${encodeURIComponent(app.contactEmail)}`}
+              className="mt-3 flex w-full items-center gap-2.5 rounded-lg border border-dashed border-gray-300 px-2.5 py-2 text-[13px] text-gray-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-neutral-700 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/5 dark:hover:text-indigo-400"
+            >
+              <IconPlus className="h-4 w-4 shrink-0" />
+              Add Program
+            </Link>
           </div>
           <div className="border-t border-gray-200 px-3 py-3 dark:border-neutral-800">
             <Link
@@ -526,7 +533,7 @@ function PortalContent() {
               {/* Add program button between the two tabs */}
               {idx === 0 && (
                 <Link
-                  href="/get-started"
+                  href={`/get-started?email=${encodeURIComponent(app.contactEmail)}`}
                   className="flex flex-col items-center justify-center py-1.5"
                 >
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
