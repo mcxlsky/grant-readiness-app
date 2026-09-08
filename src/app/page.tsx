@@ -101,25 +101,8 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("choose")) {
-      setReady(true);
-      return;
-    }
-    const admin = localStorage.getItem("rsg_admin");
-    if (admin) {
-      try {
-        const parsed = JSON.parse(admin);
-        if (parsed.signedInAt && !parsed.signedOut) {
-          router.replace("/dashboard");
-          return;
-        }
-      } catch {
-        /* fall through to landing */
-      }
-    }
     setReady(true);
-  }, [router]);
+  }, []);
 
   const handleAdmin = () => {
     localStorage.setItem(
