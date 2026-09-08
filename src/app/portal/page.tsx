@@ -149,13 +149,11 @@ function getMilestones(org: PortfolioOrg | null): Milestone[] {
 
 /* ── Sidebar nav items ────────────────────────────────── */
 
-type PortalView = "overview" | "grants" | "documents" | "messages" | "help";
+type PortalView = "overview" | "documents" | "messages" | "help";
 
 const NAV_ITEMS: { id: PortalView; label: string; icon: typeof IconLayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: IconLayoutDashboard },
-  { id: "grants", label: "Grant Plan", icon: IconTargetArrow },
   { id: "messages", label: "Messages", icon: IconMessageCircle },
-  { id: "help", label: "Help", icon: IconHelpCircle },
 ];
 
 /* ── Wrapper for Suspense (useSearchParams requires it) ── */
@@ -389,6 +387,13 @@ function PortalContent() {
                       <IconFolder className="h-4 w-4 text-gray-400 dark:text-neutral-500" />
                       Documents
                     </button>
+                    <button
+                      onClick={() => { setView("help"); setProfileOpen(false); }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    >
+                      <IconHelpCircle className="h-4 w-4 text-gray-400 dark:text-neutral-500" />
+                      Help &amp; FAQ
+                    </button>
                     <div className="mx-3 my-1 border-t border-gray-100 dark:border-neutral-800" />
                     <button
                       onClick={() => { handleSignOut(); setProfileOpen(false); }}
@@ -442,7 +447,7 @@ function PortalContent() {
         </aside>
 
         {/* Main content */}
-        <main className="flex flex-1 flex-col overflow-y-auto pb-16 md:pb-0">
+        <main className="flex flex-1 flex-col overflow-y-auto">
           <div className="mx-auto w-full max-w-[720px] flex-1 px-6 pt-8 pb-8 md:px-10">
             <AnimatePresence mode="wait">
               <motion.div
@@ -452,8 +457,7 @@ function PortalContent() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                {view === "overview" && <OverviewPanel app={app} org={org} onNavigate={setView} onUnlock={() => setPaywallOpen(true)} />}
-                {view === "grants" && <GrantPlanPanel org={org} onRefreshOrg={() => setOrg(resolveOrg(app))} />}
+                {view === "overview" && <OverviewPanel app={app} org={org} onUnlock={() => setPaywallOpen(true)} onRefreshOrg={() => setOrg(resolveOrg(app))} />}
                 {view === "documents" && <DocumentsPanel app={app} />}
                 {view === "messages" && <MessagesPanel />}
                 {view === "help" && <HelpPanel />}
@@ -461,28 +465,6 @@ function PortalContent() {
             </AnimatePresence>
           </div>
         </main>
-      </div>
-
-      {/* Mobile bottom nav */}
-      <div className="flex shrink-0 items-center justify-around border-t border-gray-200 bg-white py-2 dark:border-neutral-800 dark:bg-neutral-900 md:hidden">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const active = view === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setView(item.id)}
-              className={`relative flex flex-col items-center gap-0.5 px-3 py-1 ${
-                active
-                  ? "text-indigo-600 dark:text-indigo-400"
-                  : "text-gray-400 dark:text-neutral-500"
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </button>
-          );
-        })}
       </div>
 
       {/* Paywall modal */}
@@ -506,7 +488,8 @@ function PortalContent() {
 
 /* ── Overview panel ───────────────────────────────────── */
 
-function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: PortfolioOrg | null; onNavigate: (v: PortalView) => void; onUnlock: () => void }) {
+function OverviewPanel({ app, org, onUnlock, onRefreshOrg }: { app: GrantApplication; org: PortfolioOrg | null; onUnlock: () => void; onRefreshOrg: () => void }) {
+  const [reviewingGrant, setReviewingGrant] = useState<PitchedGrant | null>(null);
   const inPipeline = org && (org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted");
   const pitched = org?.pitchedGrants ?? [];
   const readiness = org?.analysisData?.readiness;
@@ -532,15 +515,11 @@ function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: Por
     }
   }
 
-  // Pipeline stats
-  const needsReview = pitched.filter((g) => g.reviewStatus === "in_review");
-  const changesRequested = pitched.filter((g) => g.reviewStatus === "changes_requested");
-  const approved = pitched.filter((g) => g.reviewStatus === "approved");
+  // Pipeline grants
   const activeGrants = pitched.filter((g) => g.status !== "declined");
-  const upcomingDeadlines = activeGrants
-    .filter((g) => g.deadline)
-    .sort((a, b) => (a.deadline! > b.deadline! ? 1 : -1))
-    .slice(0, 3);
+  const visibleGrants = pitched.filter((g) =>
+    g.status === "writing" || g.status === "submitted" || g.status === "awarded" || g.status === "declined"
+  );
 
   return (
     <>
@@ -552,7 +531,7 @@ function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: Por
       </p>
 
       {inPipeline ? (
-        /* ── IN-PIPELINE VIEW: grant-by-grant activity ───── */
+        /* ── IN-PIPELINE VIEW: full grant plan inline ───── */
         <>
           {/* Status line */}
           {activeGrants.length > 0 ? (() => {
@@ -574,82 +553,120 @@ function OverviewPanel({ app, org, onUnlock }: { app: GrantApplication; org: Por
             </p>
           )}
 
-          {/* Grant cards — each active grant as one row */}
-          {activeGrants.length > 0 && (
-            <div className="mb-4 space-y-2">
-              {activeGrants
+          {/* Grant cards — detailed view with review actions */}
+          {visibleGrants.length > 0 ? (
+            <div className="space-y-3">
+              {visibleGrants
                 .sort((a, b) => {
-                  // Needs-attention first, then by status progress
                   const attnScore = (g: PitchedGrant) =>
                     g.reviewStatus === "in_review" ? 0 : g.reviewStatus === "changes_requested" ? 1 : 10;
-                  const statusScore: Record<string, number> = { prospect: 0, researching: 1, writing: 2, submitted: 3, awarded: 4 };
+                  const statusScore: Record<string, number> = { writing: 0, submitted: 1, awarded: 2, declined: 3 };
                   const d = attnScore(a) - attnScore(b);
-                  return d !== 0 ? d : (statusScore[b.status] ?? 0) - (statusScore[a.status] ?? 0);
+                  return d !== 0 ? d : (statusScore[a.status] ?? 0) - (statusScore[b.status] ?? 0);
                 })
                 .map((g) => {
-                  const statusMeta: Record<string, { label: string; color: string; bg: string }> = {
-                    prospect: { label: "Researching", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
-                    researching: { label: "Researching", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
-                    writing: { label: "Drafting", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10" },
-                    submitted: { label: "Submitted", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
-                    awarded: { label: "Awarded", color: "text-green-700 dark:text-green-400", bg: "bg-green-50 dark:bg-green-500/10" },
-                  };
-                  const meta = statusMeta[g.status] ?? statusMeta.prospect;
-
-                  // Review overlay
-                  const needsYourReview = g.reviewStatus === "in_review";
-                  const revising = g.reviewStatus === "changes_requested";
-                  const isApproved = g.reviewStatus === "approved";
-
+                  const reviewLabel = getReviewLabel(g.reviewStatus);
                   return (
                     <div
                       key={g.id}
-                      className={cn(
-                        "rounded-xl border p-4 transition-colors",
-                        needsYourReview
-                          ? "border-blue-200 bg-blue-50/50 dark:border-blue-800/50 dark:bg-blue-500/5"
-                          : "border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
-                      )}
+                      className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{g.funderName}</div>
-                          <div className="mt-0.5 text-[11px] text-gray-400 dark:text-neutral-500 truncate">{g.grantName}</div>
+                          <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.funderName}</div>
+                          <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{g.grantName}</div>
                         </div>
-                        <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", meta.bg, meta.color)}>
-                          {meta.label}
+                        {reviewLabel && (
+                          <span className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${reviewLabel.classes}`}>
+                            {reviewLabel.icon}
+                            {reviewLabel.text}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {g.matchPct > 0 && (
+                          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tabular-nums ${
+                            g.matchPct >= 85
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                              : g.matchPct >= 70
+                                ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                                : "bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400"
+                          }`}>
+                            {g.matchPct}% fit
+                          </span>
+                        )}
+                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
+                          {fmt$(g.avgGrant)} avg
+                        </span>
+                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
+                          Due {g.deadline}
                         </span>
                       </div>
 
-                      {/* Context row — deadline + review status */}
-                      <div className="mt-2.5 flex items-center gap-3 text-[11px]">
-                        {g.deadline && (
-                          <span className="text-gray-400 dark:text-neutral-500">Due {g.deadline}</span>
-                        )}
-                        {g.matchPct > 0 && (
-                          <span className="text-gray-400 dark:text-neutral-500">{g.matchPct}% fit</span>
-                        )}
-                        {needsYourReview && (
-                          <button
-                            onClick={() => onNavigate("grants")}
-                            className="ml-auto font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
-                          >
-                            Review draft →
-                          </button>
-                        )}
-                        {revising && (
-                          <span className="ml-auto font-medium text-amber-600 dark:text-amber-400">Consultant revising</span>
-                        )}
-                        {isApproved && (
-                          <span className="ml-auto font-medium text-emerald-600 dark:text-emerald-400">✓ Approved</span>
-                        )}
-                      </div>
+                      {/* Review CTA */}
+                      {g.reviewStatus === "in_review" && (
+                        <button
+                          onClick={() => setReviewingGrant(g)}
+                          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                        >
+                          Review Draft Answers
+                        </button>
+                      )}
+                      {g.reviewStatus === "approved" && (
+                        <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                          <IconCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                            You approved these answers. Your consultant will submit the application.
+                          </span>
+                        </div>
+                      )}
+                      {g.reviewStatus === "changes_requested" && (
+                        <div className="mt-3 flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 dark:border-orange-500/20 dark:bg-orange-500/5">
+                          <IconMessageDots className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
+                          <span className="text-xs font-medium text-orange-700 dark:text-orange-400">
+                            Changes requested — waiting for your consultant to revise.
+                          </span>
+                        </div>
+                      )}
+                      {g.status === "submitted" && (
+                        <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                          <IconSend className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                            Application submitted to the funder.
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
             </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+              <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
+              <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
+                No active grants yet
+              </p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-neutral-500">
+                Your consultant is researching opportunities. Grants will appear here once they start drafting.
+              </p>
+            </div>
           )}
 
+          {/* Review modal */}
+          <AnimatePresence>
+            {reviewingGrant && org && (
+              <ApplicantReviewModal
+                grant={reviewingGrant}
+                ein={org.ein}
+                onClose={() => setReviewingGrant(null)}
+                onRefresh={() => {
+                  onRefreshOrg();
+                  setReviewingGrant(null);
+                }}
+              />
+            )}
+          </AnimatePresence>
         </>
       ) : (
         /* ── PRE-PIPELINE VIEW: score + action items + unlock ── */
