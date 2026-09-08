@@ -451,13 +451,6 @@ function PortalContent() {
                 );
               })}
             </nav>
-            <Link
-              href={`/get-started?email=${encodeURIComponent(app.contactEmail)}`}
-              className="mt-3 flex w-full items-center gap-2.5 rounded-lg border border-dashed border-gray-300 px-2.5 py-2 text-[13px] text-gray-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-neutral-700 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/5 dark:hover:text-indigo-400"
-            >
-              <IconPlus className="h-4 w-4 shrink-0" />
-              Add Program
-            </Link>
           </div>
           <div className="border-t border-gray-200 px-3 py-3 dark:border-neutral-800">
             <Link
@@ -473,23 +466,44 @@ function PortalContent() {
         {/* Main content */}
         <main ref={mainRef} className="flex flex-1 flex-col overflow-y-auto">
           <div className="mx-auto w-full max-w-[720px] flex-1 px-6 pt-8 pb-8 md:px-10">
-            {/* Program sub-tabs — only when multiple applications on Programs view */}
-            {allApps.length > 1 && view === "programs" && (
-              <div className="mb-6 flex gap-1.5 overflow-x-auto">
-                {allApps.map((a, i) => (
-                  <button
-                    key={a.id}
-                    onClick={() => setActiveAppIdx(i)}
-                    className={cn(
-                      "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
-                      i === activeAppIdx
-                        ? "bg-indigo-600 text-white dark:bg-indigo-500"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                    )}
+            {view === "programs" && (
+              <div className="mb-6 -mx-6 px-6 md:-mx-10 md:px-10">
+                <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+                  {allApps.map((a, i) => {
+                    const selected = i === activeAppIdx;
+                    return (
+                      <button
+                        key={a.id}
+                        onClick={() => setActiveAppIdx(i)}
+                        className={cn(
+                          "shrink-0 rounded-xl border px-4 py-3 text-left transition-all",
+                          allApps.length === 1 ? "flex-1" : "min-w-[240px] max-w-[300px]",
+                          selected
+                            ? "border-indigo-300 bg-white shadow-sm ring-1 ring-indigo-200 dark:border-indigo-500/40 dark:bg-neutral-900 dark:ring-indigo-500/20"
+                            : "border-gray-200 bg-white/60 hover:border-gray-300 hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/40 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
+                        )}
+                      >
+                        <div className={cn(
+                          "text-sm font-semibold truncate",
+                          selected ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-neutral-400"
+                        )}>
+                          {a.projectTitle}
+                        </div>
+                        <div className="mt-0.5 text-xs text-gray-400 dark:text-neutral-500 truncate">
+                          {a.amountRequested} · {a.projectTimeline}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {/* Add program card */}
+                  <Link
+                    href={`/get-started?email=${encodeURIComponent(app.contactEmail)}`}
+                    className="flex shrink-0 w-[120px] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-4 py-3 text-gray-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-neutral-700 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/5 dark:hover:text-indigo-400"
                   >
-                    {a.projectTitle}
-                  </button>
-                ))}
+                    <IconPlus className="h-4 w-4" />
+                    <span className="text-[10px] font-medium">Add Program</span>
+                  </Link>
+                </div>
               </div>
             )}
 
@@ -574,19 +588,10 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
 
   // Pipeline grants
   const activeGrants = pitched.filter((g) => g.status !== "declined");
-  const visibleGrants = pitched.filter((g) =>
-    g.status === "writing" || g.status === "submitted" || g.status === "awarded" || g.status === "declined"
-  );
+  const visibleGrants = pitched.filter((g) => g.status !== "declined");
 
   return (
     <>
-      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
-        {app.projectTitle}
-      </h1>
-      <p className="mb-5 text-sm text-gray-500 dark:text-neutral-500">
-        {app.amountRequested} · {app.projectTimeline}
-      </p>
-
       {!inPipeline ? (
         <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
           <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
@@ -626,9 +631,9 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                 .sort((a, b) => {
                   const attnScore = (g: PitchedGrant) =>
                     g.reviewStatus === "in_review" ? 0 : g.reviewStatus === "changes_requested" ? 1 : 10;
-                  const statusScore: Record<string, number> = { writing: 0, submitted: 1, awarded: 2, declined: 3 };
+                  const statusScore: Record<string, number> = { writing: 0, submitted: 1, awarded: 2, prospect: 3, researching: 3 };
                   const d = attnScore(a) - attnScore(b);
-                  return d !== 0 ? d : (statusScore[a.status] ?? 0) - (statusScore[b.status] ?? 0);
+                  return d !== 0 ? d : (statusScore[a.status] ?? 5) - (statusScore[b.status] ?? 5);
                 })
                 .map((g) => {
                   const reviewLabel = getReviewLabel(g.reviewStatus);
@@ -642,12 +647,16 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                           <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.funderName}</div>
                           <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{g.grantName}</div>
                         </div>
-                        {reviewLabel && (
+                        {reviewLabel ? (
                           <span className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${reviewLabel.classes}`}>
                             {reviewLabel.icon}
                             {reviewLabel.text}
                           </span>
-                        )}
+                        ) : (g.status === "prospect" || g.status === "researching") ? (
+                          <span className="shrink-0 rounded-full bg-violet-50 px-2.5 py-0.5 text-[10px] font-semibold text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+                            Researching
+                          </span>
+                        ) : null}
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -711,10 +720,10 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
             <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
               <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
               <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
-                No active grants yet
+                No grants yet
               </p>
               <p className="mt-1 text-xs text-gray-400 dark:text-neutral-500">
-                Your consultant is researching opportunities. Grants will appear here once they start drafting.
+                Your consultant will start identifying grant opportunities for this program.
               </p>
             </div>
           )}
