@@ -656,8 +656,10 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.grantName}</div>
-                          <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{g.funderName}</div>
+                          <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.funderName}</div>
+                          <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
+                            {g.grantName} · Up to {fmt$(g.grantRange[1])}
+                          </div>
                         </div>
                         {reviewLabel ? (
                           <span className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${reviewLabel.classes}`}>
@@ -671,25 +673,25 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                         ) : null}
                       </div>
 
-                      {/* Match + key details */}
-                      <div className="mt-3 flex items-center gap-3">
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                         {g.matchPct > 0 && (
-                          <span className={`text-lg font-bold tabular-nums ${
+                          <span className={`font-semibold ${
                             g.matchPct >= 85
                               ? "text-emerald-600 dark:text-emerald-400"
                               : g.matchPct >= 70
                                 ? "text-amber-600 dark:text-amber-400"
                                 : "text-gray-500 dark:text-neutral-400"
                           }`}>
-                            {g.matchPct}%
+                            {g.matchPct >= 85 ? "Strong" : g.matchPct >= 70 ? "Good" : "Possible"} match
                           </span>
                         )}
-                        <div className="text-xs text-gray-500 dark:text-neutral-400">
-                          <span className="font-semibold text-gray-700 dark:text-neutral-300">{fmt$(g.avgGrant)}</span> avg · Due {g.deadline}
-                        </div>
+                        <span className="text-gray-300 dark:text-neutral-600">·</span>
+                        <span className="text-gray-500 dark:text-neutral-400">
+                          {g.deadline === "Rolling" ? "Rolling deadline" : `Deadline ${g.deadline}`}
+                        </span>
                       </div>
                       {g.notes && (
-                        <p className="mt-2 text-xs leading-relaxed text-gray-500 dark:text-neutral-400">{g.notes}</p>
+                        <p className="mt-2 text-xs leading-relaxed text-gray-500 italic dark:text-neutral-400">&ldquo;{g.notes}&rdquo;</p>
                       )}
 
                       {/* Review CTA */}
