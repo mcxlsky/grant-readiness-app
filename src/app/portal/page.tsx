@@ -584,7 +584,10 @@ function PortalContent() {
 function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org: PortfolioOrg | null; onRefreshOrg: () => void }) {
   const [reviewingGrant, setReviewingGrant] = useState<PitchedGrant | null>(null);
   const inPipeline = org && (org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted");
-  const pitched = org?.pitchedGrants ?? [];
+  // Filter grants to this specific application (fall back to all if none are tagged)
+  const allPitched = org?.pitchedGrants ?? [];
+  const hasAppScoped = allPitched.some((g) => g.applicationId);
+  const pitched = hasAppScoped ? allPitched.filter((g) => g.applicationId === app.id) : allPitched;
 
   // Pipeline grants
   const activeGrants = pitched.filter((g) => g.status !== "declined");

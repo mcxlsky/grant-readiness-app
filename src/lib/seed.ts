@@ -17,6 +17,7 @@ export const SEED_PORTFOLIO: PortfolioOrg[] = [
     pitchedGrants: [
       {
         id: "pg_seed_3",
+        applicationId: "app_seed_6",
         grantName: "K-12 Education Innovation",
         funderName: "Bill & Melinda Gates Foundation",
         type: "Private Foundation",
@@ -28,6 +29,21 @@ export const SEED_PORTFOLIO: PortfolioOrg[] = [
         notes: "",
         addedAt: now - 2 * day,
         url: "https://www.gatesfoundation.org",
+      },
+      {
+        id: "pg_seed_4",
+        applicationId: "app_seed_9",
+        grantName: "STEM Education Partnerships",
+        funderName: "National Science Foundation",
+        type: "Federal",
+        matchPct: 89,
+        status: "researching",
+        deadline: "February 1",
+        avgGrant: 400000,
+        grantRange: [150000, 1000000] as [number, number],
+        notes: "Great alignment with fellowship model — checking eligibility for Noyce Track",
+        addedAt: now - 1 * day,
+        url: "https://www.nsf.gov/funding/programs/stem-education",
       },
     ],
     analysisData: {
@@ -723,6 +739,7 @@ export const SEED_PORTFOLIO: PortfolioOrg[] = [
     pitchedGrants: [
       {
         id: "pg_seed_1",
+        applicationId: "app_seed_3",
         grantName: "Community Food Projects",
         funderName: "USDA Community Food Projects",
         type: "Federal",
@@ -737,6 +754,7 @@ export const SEED_PORTFOLIO: PortfolioOrg[] = [
       },
       {
         id: "pg_seed_2",
+        applicationId: "app_seed_3",
         grantName: "Food Insecurity",
         funderName: "Bezos Day One Fund",
         type: "Private Foundation",
@@ -1050,7 +1068,7 @@ export const SEED_APPLICATIONS: GrantApplication[] = [
     referralSource: "Referral from another organization",
   },
   {
-    id: "app_seed_7",
+    id: "app_seed_9",
     status: "approved",
     submittedAt: now - 18 * day,
     updatedAt: now - 10 * day,
