@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   IconSearch,
@@ -149,10 +149,11 @@ function getMilestones(org: PortfolioOrg | null): Milestone[] {
 
 /* ── Sidebar nav items ────────────────────────────────── */
 
-type PortalView = "overview" | "documents" | "messages" | "help";
+type PortalView = "programs" | "org" | "documents" | "messages" | "help";
 
 const NAV_ITEMS: { id: PortalView; label: string; icon: typeof IconLayoutDashboard }[] = [
-  { id: "overview", label: "Overview", icon: IconLayoutDashboard },
+  { id: "programs", label: "Programs", icon: IconTargetArrow },
+  { id: "org", label: "Organization", icon: IconLayoutDashboard },
   { id: "messages", label: "Messages", icon: IconMessageCircle },
 ];
 
@@ -176,7 +177,9 @@ function PortalContent() {
   const [org, setOrg] = useState<PortfolioOrg | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [view, setView] = useState<PortalView>("overview");
+  const [view, setView] = useState<PortalView>("programs");
+
+  const mainRef = useRef<HTMLElement>(null);
 
   // Paywall + profile dropdown state
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -228,6 +231,11 @@ function PortalContent() {
   useEffect(() => {
     if (app) setOrg(resolveOrg(app));
   }, [activeAppIdx]);
+
+  // Scroll content to top on tab/program switch
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+  }, [view, activeAppIdx]);
 
   const handleLookup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -419,6 +427,27 @@ function PortalContent() {
         </div>
       </div>
 
+      {/* Mobile tab strip */}
+      <div className="flex shrink-0 gap-1 border-b border-gray-200 bg-white px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900 md:hidden">
+        {NAV_ITEMS.map((item) => {
+          const active = view === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={cn(
+                "rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
+                active
+                  ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                  : "text-gray-500 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+              )}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — desktop */}
         <aside className="hidden w-[220px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
@@ -456,10 +485,10 @@ function PortalContent() {
         </aside>
 
         {/* Main content */}
-        <main className="flex flex-1 flex-col overflow-y-auto">
+        <main ref={mainRef} className="flex flex-1 flex-col overflow-y-auto">
           <div className="mx-auto w-full max-w-[720px] flex-1 px-6 pt-8 pb-8 md:px-10">
-            {/* Program tabs — only when multiple applications */}
-            {allApps.length > 1 && view === "overview" && (
+            {/* Program sub-tabs — only when multiple applications on Programs view */}
+            {allApps.length > 1 && view === "programs" && (
               <div className="mb-6 flex gap-1.5 overflow-x-auto">
                 {allApps.map((a, i) => (
                   <button
@@ -486,7 +515,8 @@ function PortalContent() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                {view === "overview" && <OverviewPanel app={app} org={org} onUnlock={() => setPaywallOpen(true)} onRefreshOrg={() => setOrg(resolveOrg(app))} />}
+                {view === "programs" && <ProgramsPanel app={app} org={org} onRefreshOrg={() => setOrg(resolveOrg(app))} />}
+                {view === "org" && <OrgPanel app={app} org={org} onUnlock={() => setPaywallOpen(true)} />}
                 {view === "documents" && <DocumentsPanel app={app} />}
                 {view === "messages" && <MessagesPanel />}
                 {view === "help" && <HelpPanel />}
@@ -515,34 +545,12 @@ function PortalContent() {
   );
 }
 
-/* ── Overview panel ───────────────────────────────────── */
+/* ── Programs panel — per-program grant activity ─────── */
 
-function OverviewPanel({ app, org, onUnlock, onRefreshOrg }: { app: GrantApplication; org: PortfolioOrg | null; onUnlock: () => void; onRefreshOrg: () => void }) {
+function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org: PortfolioOrg | null; onRefreshOrg: () => void }) {
   const [reviewingGrant, setReviewingGrant] = useState<PitchedGrant | null>(null);
   const inPipeline = org && (org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted");
   const pitched = org?.pitchedGrants ?? [];
-  const readiness = org?.analysisData?.readiness;
-  const isReady = readiness && (readiness.tier === "Grant-Ready" || readiness.tier === "Strong");
-
-  // Derive action items from failing readiness checks
-  const actionItems: { title: string; category: string; priority: "high" | "medium" | "low" }[] = [];
-  if (org?.analysisData) {
-    const { readiness: r, actionItems: consultantItems } = org.analysisData;
-    for (const item of consultantItems) {
-      actionItems.push({ title: item.action, category: item.category, priority: item.priority });
-    }
-    if (actionItems.length === 0) {
-      for (const section of [
-        { name: "Financial", data: r.financial },
-        { name: "Compliance", data: r.compliance },
-        { name: "Digital Presence", data: r.digital },
-      ]) {
-        for (const [label, pass] of section.data.checks) {
-          if (!pass) actionItems.push({ title: label, category: section.name, priority: "medium" });
-        }
-      }
-    }
-  }
 
   // Pipeline grants
   const activeGrants = pitched.filter((g) => g.status !== "declined");
@@ -556,11 +564,20 @@ function OverviewPanel({ app, org, onUnlock, onRefreshOrg }: { app: GrantApplica
         {app.projectTitle}
       </h1>
       <p className="mb-5 text-sm text-gray-500 dark:text-neutral-500">
-        {app.orgName} · {app.amountRequested} · {app.projectTimeline}
+        {app.amountRequested} · {app.projectTimeline}
       </p>
 
-      {inPipeline ? (
-        /* ── IN-PIPELINE VIEW: full grant plan inline ───── */
+      {!inPipeline ? (
+        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+          <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
+          <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
+            Not yet in the pipeline
+          </p>
+          <p className="mt-1 text-xs text-gray-400 dark:text-neutral-500">
+            Check the Organization tab to see your readiness score and unlock grant writing.
+          </p>
+        </div>
+      ) : (
         <>
           {/* Status line */}
           {activeGrants.length > 0 ? (() => {
@@ -578,7 +595,7 @@ function OverviewPanel({ app, org, onUnlock, onRefreshOrg }: { app: GrantApplica
             );
           })() : (
             <p className="mb-4 text-sm text-gray-500 dark:text-neutral-400">
-              Your consultant is researching grant opportunities for you.
+              Your consultant is researching grant opportunities for this program.
             </p>
           )}
 
@@ -697,108 +714,188 @@ function OverviewPanel({ app, org, onUnlock, onRefreshOrg }: { app: GrantApplica
             )}
           </AnimatePresence>
         </>
-      ) : (
-        /* ── PRE-PIPELINE VIEW: score + action items + unlock ── */
-        <>
-          {/* Readiness score — hero when not in pipeline */}
-          {readiness && (() => {
-            const pct = readiness.overall;
-            const tierColor = isReady
-              ? "text-emerald-600 dark:text-emerald-400"
-              : pct >= 50
-              ? "text-amber-600 dark:text-amber-400"
-              : "text-red-600 dark:text-red-400";
-            const ringColor = isReady
-              ? "stroke-emerald-500"
-              : pct >= 50
-              ? "stroke-amber-500"
-              : "stroke-red-500";
-            const sections = [
-              { label: "Financial", score: readiness.financial.score },
-              { label: "Compliance", score: readiness.compliance.score },
-              { label: "Digital Presence", score: readiness.digital.score },
-            ];
-            return (
-              <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-                <div className="flex items-center gap-5">
-                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
-                    <svg className="h-20 w-20 -rotate-90" viewBox="0 0 72 72">
-                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
-                        className="stroke-gray-100 dark:stroke-neutral-800" />
-                      <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
-                        strokeLinecap="round"
-                        strokeDasharray={`${(pct / 100) * 188.5} 188.5`}
-                        className={ringColor} />
-                    </svg>
-                    <span className="absolute text-lg font-bold text-gray-900 dark:text-white">{pct}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className={`text-sm font-semibold ${tierColor}`}>{readiness.tier}</div>
-                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">Grant Readiness Score</div>
-                    <div className="mt-3 space-y-1.5">
-                      {sections.map((s) => (
-                        <div key={s.label} className="flex items-center gap-2">
-                          <span className="w-24 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.label}</span>
-                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-800">
-                            <div
-                              className={`h-full rounded-full ${s.score >= 70 ? "bg-emerald-500" : s.score >= 40 ? "bg-amber-500" : "bg-red-500"}`}
-                              style={{ width: `${s.score}%` }}
-                            />
-                          </div>
-                          <span className="w-6 text-right text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.score}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
+      )}
+    </>
+  );
+}
 
-          {/* Unlock CTA — shown when Grant-Ready but not yet in pipeline */}
-          {isReady && (
-            <button
-              onClick={onUnlock}
-              className="mb-6 flex w-full items-center gap-4 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50 p-5 text-left transition-colors hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-800/50 dark:from-indigo-500/10 dark:to-violet-500/10 dark:hover:border-indigo-700/50 dark:hover:from-indigo-500/15 dark:hover:to-violet-500/15"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 dark:bg-indigo-500">
-                <IconSparkles className="h-5 w-5 text-white" />
+/* ── Organization panel — readiness, action items, unlock ── */
+
+function OrgPanel({ app, org, onUnlock }: { app: GrantApplication; org: PortfolioOrg | null; onUnlock: () => void }) {
+  const readiness = org?.analysisData?.readiness;
+  const isReady = readiness && (readiness.tier === "Grant-Ready" || readiness.tier === "Strong");
+  const inPipeline = org && (org.stage === "prospecting" || org.stage === "writing" || org.stage === "submitted");
+
+  // Derive action items from failing readiness checks
+  const actionItems: { title: string; category: string; priority: "high" | "medium" | "low" }[] = [];
+  if (org?.analysisData) {
+    const { readiness: r, actionItems: consultantItems } = org.analysisData;
+    for (const item of consultantItems) {
+      actionItems.push({ title: item.action, category: item.category, priority: item.priority });
+    }
+    if (actionItems.length === 0) {
+      for (const section of [
+        { name: "Financial", data: r.financial },
+        { name: "Compliance", data: r.compliance },
+        { name: "Digital Presence", data: r.digital },
+      ]) {
+        for (const [label, pass] of section.data.checks) {
+          if (!pass) actionItems.push({ title: label, category: section.name, priority: "medium" });
+        }
+      }
+    }
+  }
+
+  const milestones = getMilestones(org);
+
+  return (
+    <>
+      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+        {app.orgName}
+      </h1>
+      <p className="mb-5 text-sm text-gray-500 dark:text-neutral-500">
+        {org?.analysisData?.org.city}, {org?.analysisData?.org.state} · EIN {app.ein}
+      </p>
+
+      {/* Readiness score */}
+      {readiness && (() => {
+        const pct = readiness.overall;
+        const tierColor = isReady
+          ? "text-emerald-600 dark:text-emerald-400"
+          : pct >= 50
+          ? "text-amber-600 dark:text-amber-400"
+          : "text-red-600 dark:text-red-400";
+        const ringColor = isReady
+          ? "stroke-emerald-500"
+          : pct >= 50
+          ? "stroke-amber-500"
+          : "stroke-red-500";
+        const sections = [
+          { label: "Financial", score: readiness.financial.score },
+          { label: "Compliance", score: readiness.compliance.score },
+          { label: "Digital Presence", score: readiness.digital.score },
+        ];
+        return (
+          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex items-center gap-5">
+              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
+                <svg className="h-20 w-20 -rotate-90" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
+                    className="stroke-gray-100 dark:stroke-neutral-800" />
+                  <circle cx="36" cy="36" r="30" fill="none" strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(pct / 100) * 188.5} 188.5`}
+                    className={ringColor} />
+                </svg>
+                <span className="absolute text-lg font-bold text-gray-900 dark:text-white">{pct}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-gray-900 dark:text-white">Ready to start winning grants?</div>
-                <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">Unlock grant prospecting, proposal support, and pipeline management.</div>
-              </div>
-              <IconArrowRight className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
-            </button>
-          )}
-
-          {/* Action items — only when there are items to show */}
-          {actionItems.length > 0 && (
-            <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-                Action Items
-              </h3>
-              <div className="space-y-2">
-                {actionItems.map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/50">
-                    <div className={`mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 ${
-                      item.priority === "high"
-                        ? "border-red-400 dark:border-red-500"
-                        : item.priority === "medium"
-                        ? "border-amber-400 dark:border-amber-500"
-                        : "border-gray-300 dark:border-neutral-600"
-                    }`} />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800 dark:text-neutral-200">{item.title}</div>
-                      <div className="mt-0.5 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{item.category}</div>
+                <div className={`text-sm font-semibold ${tierColor}`}>{readiness.tier}</div>
+                <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">Grant Readiness Score</div>
+                <div className="mt-3 space-y-1.5">
+                  {sections.map((s) => (
+                    <div key={s.label} className="flex items-center gap-2">
+                      <span className="w-24 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.label}</span>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-800">
+                        <div
+                          className={`h-full rounded-full ${s.score >= 70 ? "bg-emerald-500" : s.score >= 40 ? "bg-amber-500" : "bg-red-500"}`}
+                          style={{ width: `${s.score}%` }}
+                        />
+                      </div>
+                      <span className="w-6 text-right text-[10px] font-medium text-gray-400 dark:text-neutral-500">{s.score}</span>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
-          )}
-        </>
+          </div>
+        );
+      })()}
+
+      {/* Unlock CTA — shown when Grant-Ready but not yet in pipeline */}
+      {isReady && !inPipeline && (
+        <button
+          onClick={onUnlock}
+          className="mb-6 flex w-full items-center gap-4 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-violet-50 p-5 text-left transition-colors hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-800/50 dark:from-indigo-500/10 dark:to-violet-500/10 dark:hover:border-indigo-700/50 dark:hover:from-indigo-500/15 dark:hover:to-violet-500/15"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 dark:bg-indigo-500">
+            <IconSparkles className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-gray-900 dark:text-white">Ready to start winning grants?</div>
+            <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">Unlock grant prospecting, proposal support, and pipeline management.</div>
+          </div>
+          <IconArrowRight className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+        </button>
       )}
+
+      {/* Pipeline status — shown when already in pipeline */}
+      {inPipeline && (
+        <div className="mb-6 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+          <IconCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+            Active in the grant pipeline
+          </span>
+        </div>
+      )}
+
+      {/* Action items */}
+      {actionItems.length > 0 && (
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+            Action Items
+          </h3>
+          <div className="space-y-2">
+            {actionItems.map((item, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/50">
+                <div className={`mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 ${
+                  item.priority === "high"
+                    ? "border-red-400 dark:border-red-500"
+                    : item.priority === "medium"
+                    ? "border-amber-400 dark:border-amber-500"
+                    : "border-gray-300 dark:border-neutral-600"
+                }`} />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-800 dark:text-neutral-200">{item.title}</div>
+                  <div className="mt-0.5 text-[10px] font-medium text-gray-400 dark:text-neutral-500">{item.category}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Milestones */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+          Progress
+        </h3>
+        <div className="space-y-3">
+          {milestones.map((m, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className={cn(
+                "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                m.done
+                  ? "bg-emerald-100 dark:bg-emerald-500/20"
+                  : m.current
+                  ? "border-2 border-indigo-400 dark:border-indigo-500"
+                  : "border-2 border-gray-200 dark:border-neutral-700"
+              )}>
+                {m.done && <IconCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className={cn(
+                  "text-sm font-medium",
+                  m.done ? "text-gray-400 line-through dark:text-neutral-500" : "text-gray-800 dark:text-neutral-200"
+                )}>
+                  {m.title}
+                </div>
+                <div className="mt-0.5 text-[11px] text-gray-400 dark:text-neutral-500">{m.description}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   );
 }
@@ -952,153 +1049,6 @@ function MessagesPanel() {
           You will be notified by email when there are updates. In-app messaging is coming soon.
         </p>
       </div>
-    </>
-  );
-}
-
-/* ── Grant Plan panel — applicant sees pitched grants + reviews answers ── */
-
-function GrantPlanPanel({ org, onRefreshOrg }: { org: PortfolioOrg | null; onRefreshOrg: () => void }) {
-  const [reviewingGrant, setReviewingGrant] = useState<PitchedGrant | null>(null);
-
-  const pitched = org?.pitchedGrants ?? [];
-
-  // Only show grants that are in writing or later (not early prospects the consultant hasn't committed to)
-  const visibleGrants = pitched.filter((g) =>
-    g.status === "writing" || g.status === "submitted" || g.status === "awarded" || g.status === "declined"
-  );
-
-  if (!org) {
-    return (
-      <>
-        <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">Grant Plan</h1>
-        <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
-          Your consultant hasn&apos;t started prospecting yet.
-        </p>
-        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-10 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
-          <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
-          <p className="text-sm text-gray-400 dark:text-neutral-500">
-            Grants matched to your organization will appear here.
-          </p>
-        </div>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">Grant Plan</h1>
-      <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
-        Grants your consultant is pursuing for {org.name}.
-      </p>
-
-      {visibleGrants.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-10 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
-          <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
-          <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
-            No active grants yet
-          </p>
-          <p className="mt-1 text-xs text-gray-400 dark:text-neutral-500">
-            Your consultant is researching opportunities. Grants will appear here once they start drafting applications.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {visibleGrants.map((g) => {
-            const reviewLabel = getReviewLabel(g.reviewStatus);
-            return (
-              <div
-                key={g.id}
-                className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.funderName}</div>
-                    <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{g.grantName}</div>
-                  </div>
-                  {reviewLabel && (
-                    <span className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${reviewLabel.classes}`}>
-                      {reviewLabel.icon}
-                      {reviewLabel.text}
-                    </span>
-                  )}
-                </div>
-
-                {/* Evaluation data */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {g.matchPct > 0 && (
-                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tabular-nums ${
-                      g.matchPct >= 85
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                        : g.matchPct >= 70
-                          ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                          : "bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400"
-                    }`}>
-                      {g.matchPct}% fit
-                    </span>
-                  )}
-                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
-                    {fmt$(g.avgGrant)} avg
-                  </span>
-                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
-                    Due {g.deadline}
-                  </span>
-                </div>
-
-                {/* Review CTA — show when answers are in_review */}
-                {g.reviewStatus === "in_review" && (
-                  <button
-                    onClick={() => setReviewingGrant(g)}
-                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                  >
-                    Review Draft Answers
-                  </button>
-                )}
-                {g.reviewStatus === "approved" && (
-                  <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-                    <IconCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                      You approved these answers. Your consultant will submit the application.
-                    </span>
-                  </div>
-                )}
-                {g.reviewStatus === "changes_requested" && (
-                  <div className="mt-3 flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 dark:border-orange-500/20 dark:bg-orange-500/5">
-                    <IconMessageDots className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
-                    <span className="text-xs font-medium text-orange-700 dark:text-orange-400">
-                      Changes requested — waiting for your consultant to revise.
-                    </span>
-                  </div>
-                )}
-                {g.status === "submitted" && (
-                  <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-                    <IconSend className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                      Application submitted to the funder.
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Review modal */}
-      <AnimatePresence>
-        {reviewingGrant && org && (
-          <ApplicantReviewModal
-            grant={reviewingGrant}
-            ein={org.ein}
-            onClose={() => setReviewingGrant(null)}
-            onRefresh={() => {
-              onRefreshOrg();
-              setReviewingGrant(null);
-            }}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 }
