@@ -524,10 +524,10 @@ function OverviewPanel({ app, org, onUnlock, onRefreshOrg }: { app: GrantApplica
   return (
     <>
       <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
-        Welcome back, {app.contactName.split(" ")[0]}
+        {app.projectTitle}
       </h1>
-      <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
-        Here&apos;s where things stand with {app.orgName}.
+      <p className="mb-5 text-sm text-gray-500 dark:text-neutral-500">
+        {app.orgName} · {app.amountRequested} · {app.projectTimeline}
       </p>
 
       {inPipeline ? (
