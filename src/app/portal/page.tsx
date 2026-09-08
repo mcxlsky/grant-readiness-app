@@ -171,7 +171,8 @@ export default function PortalPage() {
 function PortalContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [app, setApp] = useState<GrantApplication | null>(null);
+  const [allApps, setAllApps] = useState<GrantApplication[]>([]);
+  const [activeAppIdx, setActiveAppIdx] = useState(0);
   const [org, setOrg] = useState<PortfolioOrg | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -184,6 +185,8 @@ function PortalContent() {
   // Fallback lookup state
   const [email, setEmail] = useState("");
   const [showLookup, setShowLookup] = useState(false);
+
+  const app = allApps[activeAppIdx] ?? null;
 
   // Look up the portfolio org matching this application
   const resolveOrg = (application: GrantApplication) => {
@@ -200,18 +203,18 @@ function PortalContent() {
     if (ref) {
       const found = apps.find((a) => a.id === ref);
       if (found) {
-        setApp(found);
+        setAllApps([found]);
         setOrg(resolveOrg(found));
       } else {
         setNotFound(true);
       }
     } else if (emailParam) {
-      const found = apps.find(
+      const matched = apps.filter(
         (a) => a.contactEmail.toLowerCase() === emailParam.toLowerCase()
       );
-      if (found) {
-        setApp(found);
-        setOrg(resolveOrg(found));
+      if (matched.length > 0) {
+        setAllApps(matched);
+        setOrg(resolveOrg(matched[0]));
       } else {
         setNotFound(true);
       }
@@ -221,15 +224,21 @@ function PortalContent() {
     setLoading(false);
   }, [searchParams]);
 
+  // Update org when switching between apps
+  useEffect(() => {
+    if (app) setOrg(resolveOrg(app));
+  }, [activeAppIdx]);
+
   const handleLookup = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     const apps = loadApplications();
-    const found = apps.find(
+    const matched = apps.filter(
       (a) => a.contactEmail.toLowerCase() === email.trim().toLowerCase()
     );
-    if (found) {
-      setApp(found);
+    if (matched.length > 0) {
+      setAllApps(matched);
+      setActiveAppIdx(0);
       setShowLookup(false);
       setNotFound(false);
     } else {
@@ -449,9 +458,29 @@ function PortalContent() {
         {/* Main content */}
         <main className="flex flex-1 flex-col overflow-y-auto">
           <div className="mx-auto w-full max-w-[720px] flex-1 px-6 pt-8 pb-8 md:px-10">
+            {/* Program tabs — only when multiple applications */}
+            {allApps.length > 1 && view === "overview" && (
+              <div className="mb-6 flex gap-1.5 overflow-x-auto">
+                {allApps.map((a, i) => (
+                  <button
+                    key={a.id}
+                    onClick={() => setActiveAppIdx(i)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
+                      i === activeAppIdx
+                        ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                    )}
+                  >
+                    {a.projectTitle}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <AnimatePresence mode="wait">
               <motion.div
-                key={view}
+                key={`${view}-${activeAppIdx}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
