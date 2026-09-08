@@ -154,7 +154,6 @@ type PortalView = "overview" | "grants" | "documents" | "messages" | "help";
 const NAV_ITEMS: { id: PortalView; label: string; icon: typeof IconLayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: IconLayoutDashboard },
   { id: "grants", label: "Grant Plan", icon: IconTargetArrow },
-  { id: "documents", label: "Documents", icon: IconFolder },
   { id: "messages", label: "Messages", icon: IconMessageCircle },
   { id: "help", label: "Help", icon: IconHelpCircle },
 ];
@@ -180,8 +179,9 @@ function PortalContent() {
   const [notFound, setNotFound] = useState(false);
   const [view, setView] = useState<PortalView>("overview");
 
-  // Paywall state
+  // Paywall + profile dropdown state
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   // Fallback lookup state
   const [email, setEmail] = useState("");
@@ -358,17 +358,50 @@ function PortalContent() {
               {app.orgName}
             </div>
           </div>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-            <IconUser className="h-4 w-4" />
+          <div className="relative">
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-colors hover:bg-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+            >
+              <IconUser className="h-4 w-4" />
+            </button>
+            <AnimatePresence>
+              {profileOpen && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-40"
+                    onClick={() => setProfileOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-10 z-50 w-48 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
+                  >
+                    <button
+                      onClick={() => { setView("documents"); setProfileOpen(false); }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    >
+                      <IconFolder className="h-4 w-4 text-gray-400 dark:text-neutral-500" />
+                      Documents
+                    </button>
+                    <div className="mx-3 my-1 border-t border-gray-100 dark:border-neutral-800" />
+                    <button
+                      onClick={() => { handleSignOut(); setProfileOpen(false); }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    >
+                      <IconLogout className="h-4 w-4 text-gray-400 dark:text-neutral-500" />
+                      Sign out
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-gray-400 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300"
-            title="Sign out"
-          >
-            <IconLogout className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Sign out</span>
-          </button>
         </div>
       </div>
 
@@ -432,7 +465,7 @@ function PortalContent() {
 
       {/* Mobile bottom nav */}
       <div className="flex shrink-0 items-center justify-around border-t border-gray-200 bg-white py-2 dark:border-neutral-800 dark:bg-neutral-900 md:hidden">
-        {NAV_ITEMS.slice(0, 4).map((item) => {
+        {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const active = view === item.id;
           return (
