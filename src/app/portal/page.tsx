@@ -656,8 +656,8 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.funderName}</div>
-                          <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{g.grantName}</div>
+                          <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">{g.grantName}</div>
+                          <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{g.funderName}</div>
                         </div>
                         {reviewLabel ? (
                           <span className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${reviewLabel.classes}`}>
@@ -671,25 +671,26 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                         ) : null}
                       </div>
 
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      {/* Match + key details */}
+                      <div className="mt-3 flex items-center gap-3">
                         {g.matchPct > 0 && (
-                          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tabular-nums ${
+                          <span className={`text-lg font-bold tabular-nums ${
                             g.matchPct >= 85
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                              ? "text-emerald-600 dark:text-emerald-400"
                               : g.matchPct >= 70
-                                ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                                : "bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400"
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-gray-500 dark:text-neutral-400"
                           }`}>
-                            {g.matchPct}% fit
+                            {g.matchPct}%
                           </span>
                         )}
-                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
-                          {fmt$(g.avgGrant)} avg
-                        </span>
-                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
-                          Due {g.deadline}
-                        </span>
+                        <div className="text-xs text-gray-500 dark:text-neutral-400">
+                          <span className="font-semibold text-gray-700 dark:text-neutral-300">{fmt$(g.avgGrant)}</span> avg · Due {g.deadline}
+                        </div>
                       </div>
+                      {g.notes && (
+                        <p className="mt-2 text-xs leading-relaxed text-gray-500 dark:text-neutral-400">{g.notes}</p>
+                      )}
 
                       {/* Review CTA */}
                       {g.reviewStatus === "in_review" && (
