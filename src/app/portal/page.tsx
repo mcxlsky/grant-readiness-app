@@ -606,17 +606,29 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
         <>
           {/* Status line */}
           {activeGrants.length > 0 ? (() => {
-            const parts: string[] = [];
             const prospCount = pitched.filter((g) => g.status === "prospect" || g.status === "researching").length;
             const writeCount = pitched.filter((g) => g.status === "writing").length;
             const subCount = pitched.filter((g) => g.status === "submitted" || g.status === "awarded").length;
-            if (prospCount > 0) parts.push(`researching ${prospCount}`);
-            if (writeCount > 0) parts.push(`writing ${writeCount}`);
-            if (subCount > 0) parts.push(`${subCount} submitted`);
+            const total = activeGrants.length;
+            const gs = total !== 1 ? "grants" : "grant";
+
+            // Build a natural summary — avoid redundant "researching 1 — 1 grant total"
+            let summary: string;
+            if (prospCount === total && writeCount === 0 && subCount === 0) {
+              summary = `Your consultant is researching ${total} ${gs} for this program.`;
+            } else if (writeCount === total && prospCount === 0 && subCount === 0) {
+              summary = `Your consultant is writing ${total} ${gs} for this program.`;
+            } else if (subCount === total && prospCount === 0 && writeCount === 0) {
+              summary = `${total} ${gs} submitted.`;
+            } else {
+              const parts: string[] = [];
+              if (prospCount > 0) parts.push(`researching ${prospCount}`);
+              if (writeCount > 0) parts.push(`writing ${writeCount}`);
+              if (subCount > 0) parts.push(`${subCount} submitted`);
+              summary = `Your consultant is ${parts.join(", ")} — ${total} ${gs} total.`;
+            }
             return (
-              <p className="mb-4 text-sm text-gray-500 dark:text-neutral-400">
-                Your consultant is {parts.length > 0 ? parts.join(", ") : "getting started"} — {activeGrants.length} grant{activeGrants.length !== 1 ? "s" : ""} total.
-              </p>
+              <p className="mb-4 text-sm text-gray-500 dark:text-neutral-400">{summary}</p>
             );
           })() : (
             <p className="mb-4 text-sm text-gray-500 dark:text-neutral-400">
