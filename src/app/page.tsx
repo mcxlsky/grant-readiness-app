@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { motion, useReducedMotion } from "motion/react";
 import { IconBrandFacebook, IconBrandInstagram } from "@tabler/icons-react";
+
+const HeroBackground = dynamic(
+  () => import("@/components/hero-background"),
+  { ssr: false }
+);
 
 export default function LandingPage() {
   const router = useRouter();
@@ -36,27 +42,11 @@ export default function LandingPage() {
     <div className="min-h-screen bg-cream-50">
       {/* ── Hero ───────────────────────────────────────── */}
       <section className="relative flex flex-col justify-center overflow-hidden bg-cream-100 px-6 py-20 md:min-h-screen md:px-24">
-        {/* Decorative leaf (top-right) */}
-        <div
-          className="pointer-events-none absolute -right-20 -top-10 h-[500px] w-[500px] opacity-[0.08]"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M450 50C350 150 250 200 100 450"
-              stroke="#6c3484"
-              strokeWidth="2"
-            />
-            {[30, 60, 90, 120, 150, 180, 210, 240].map((offset) => (
-              <path
-                key={offset}
-                d={`M${450 - offset * 1.2} ${50 + offset * 1.4} Q${400 - offset} ${100 + offset * 1.2} ${450 - offset * 0.5} ${50 + offset * 0.8}`}
-                stroke="#6c3484"
-                strokeWidth="1.5"
-                fill="none"
-              />
-            ))}
-          </svg>
+        {/* WebGL particle network */}
+        <div className="pointer-events-none absolute inset-0 z-0 hidden sm:block" aria-hidden="true">
+          <Suspense fallback={null}>
+            <HeroBackground />
+          </Suspense>
         </div>
 
         <motion.div

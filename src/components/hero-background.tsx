@@ -76,7 +76,7 @@ function ParticleNetwork() {
 
     // Build connection lines between nearby particles
     let lineIdx = 0;
-    const r = 0.42, g = 0.45, b = 0.95; // indigo-ish
+    const r = 0.42, g = 0.20, b = 0.46; // plum-ish (#6c3484)
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       for (let j = i + 1; j < PARTICLE_COUNT; j++) {
@@ -144,7 +144,7 @@ function ParticleNetwork() {
         </bufferGeometry>
         <pointsMaterial
           size={0.04}
-          color="#a5b4fc"
+          color="#964db4"
           transparent
           opacity={0.5}
           sizeAttenuation
