@@ -1,108 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
-import { motion } from "motion/react";
-import {
-  IconArrowRight,
-  IconLayoutDashboard,
-  IconSearch,
-  IconListCheck,
-  IconPencil,
-  IconFileCheck,
-  IconBulb,
-  IconBuildingBank,
-  IconBuildingCommunity,
-  IconRocket,
-  IconTarget,
-  IconChartBar,
-} from "@tabler/icons-react";
-
-const HeroBackground = dynamic(
-  () => import("@/components/hero-background"),
-  { ssr: false }
-);
-
-const SERVICES = [
-  {
-    name: "Grant Research",
-    description: "Find grants that match your mission, capacity, and goals.",
-    icon: IconSearch,
-  },
-  {
-    name: "Eligibility Assessment",
-    description: "Know where you stand before you apply — no wasted effort.",
-    icon: IconListCheck,
-  },
-  {
-    name: "Grant Writing",
-    description: "Compelling proposals that tell your story and win funding.",
-    icon: IconPencil,
-  },
-  {
-    name: "Grant Review & Editing",
-    description: "Expert eyes on your draft before you hit submit.",
-    icon: IconFileCheck,
-  },
-  {
-    name: "Funding Strategy",
-    description: "A roadmap for sustainable, diversified revenue.",
-    icon: IconBulb,
-  },
-  {
-    name: "Corporate & Foundation",
-    description: "Tap into private philanthropy and corporate giving.",
-    icon: IconBuildingBank,
-  },
-  {
-    name: "Government Grants",
-    description: "Navigate federal, state, and local funding programs.",
-    icon: IconBuildingCommunity,
-  },
-];
-
-const VALUE_PROPS = [
-  {
-    title: "Strategy First",
-    description:
-      "We start with your mission and build a funding roadmap — not a one-off proposal.",
-    icon: IconTarget,
-  },
-  {
-    title: "Research-Backed",
-    description:
-      "We identify grants you actually qualify for, so you spend time on the right opportunities.",
-    icon: IconSearch,
-  },
-  {
-    title: "Readiness-Focused",
-    description:
-      "We help you build the organizational capacity that funders look for before you apply.",
-    icon: IconChartBar,
-  },
-];
+import { motion, useReducedMotion } from "motion/react";
+import { IconBrandFacebook, IconBrandInstagram } from "@tabler/icons-react";
 
 export default function LandingPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
-  const [navScrolled, setNavScrolled] = useState(false);
-  const heroRef = useRef<HTMLElement>(null);
-
-  // Swap nav colors when scrolling past the hero
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!heroRef.current) return;
-      const heroBottom = heroRef.current.offsetTop + heroRef.current.offsetHeight;
-      setNavScrolled(window.scrollY > heroBottom - 60);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     setReady(true);
   }, []);
+
+  const fade = prefersReducedMotion ? {} : { opacity: 0, y: 20 };
+  const fadeX = prefersReducedMotion ? {} : { opacity: 0, x: 20 };
+  const visible = { opacity: 1, y: 0, x: 0 };
+
+  const handleGetStarted = () => {
+    router.push("/get-started");
+  };
 
   const handleAdmin = () => {
     localStorage.setItem(
@@ -112,224 +30,226 @@ export default function LandingPage() {
     router.push("/dashboard");
   };
 
-  const handleGetStarted = () => {
-    router.push("/get-started");
-  };
-
   if (!ready) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
-      {/* ── Sticky nav ────────────────────────────────── */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-5 transition-colors duration-300 ${
-          navScrolled
-            ? "bg-white/90 backdrop-blur-md shadow-sm dark:bg-neutral-900/90"
-            : ""
-        }`}
-      >
-        <div className="flex items-center gap-2.5">
-          <div className="h-7 w-8 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
-          <span
-            className={`text-lg font-bold transition-colors duration-300 ${
-              navScrolled ? "text-gray-900 dark:text-white" : "text-white"
-            }`}
-          >
-            Ready Set Grants
-          </span>
-        </div>
-        <div className="hidden sm:flex items-center gap-6">
-          <a href="#services" className={`text-sm transition-colors ${navScrolled ? "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white" : "text-neutral-400 hover:text-white"}`}>Services</a>
-          <a href="#why-us" className={`text-sm transition-colors ${navScrolled ? "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white" : "text-neutral-400 hover:text-white"}`}>Why Us</a>
-          <a href="#get-started" className={`text-sm transition-colors ${navScrolled ? "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white" : "text-neutral-400 hover:text-white"}`}>Get Started</a>
-        </div>
-      </nav>
-
+    <div className="min-h-screen bg-cream-50">
       {/* ── Hero ───────────────────────────────────────── */}
-      <section ref={heroRef} className="relative flex flex-col px-6 overflow-hidden bg-gray-950 min-h-screen">
-        {/* WebGL background */}
-        <div className="pointer-events-none absolute inset-0 z-0 hidden sm:block" aria-hidden="true">
-          <Suspense fallback={null}>
-            <HeroBackground />
-          </Suspense>
+      <section className="relative flex flex-col justify-center overflow-hidden bg-cream-100 px-6 py-20 md:min-h-screen md:px-24">
+        {/* Decorative leaf (top-right) */}
+        <div
+          className="pointer-events-none absolute -right-20 -top-10 h-[500px] w-[500px] opacity-[0.08]"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M450 50C350 150 250 200 100 450"
+              stroke="#6c3484"
+              strokeWidth="2"
+            />
+            {[30, 60, 90, 120, 150, 180, 210, 240].map((offset) => (
+              <path
+                key={offset}
+                d={`M${450 - offset * 1.2} ${50 + offset * 1.4} Q${400 - offset} ${100 + offset * 1.2} ${450 - offset * 0.5} ${50 + offset * 0.8}`}
+                stroke="#6c3484"
+                strokeWidth="1.5"
+                fill="none"
+              />
+            ))}
+          </svg>
         </div>
 
-        {/* Vertically centered hero content */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative z-10 mx-auto max-w-2xl text-center flex-1 flex flex-col justify-center"
+          initial={fade}
+          animate={visible}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 max-w-3xl"
         >
-          <h1 className="text-4xl font-extrabold tracking-tight text-white md:text-5xl">
-            Grant funding starts
+          {/* Logo mark */}
+          <img
+            src="/brand/logo-mark.svg"
+            alt=""
+            className="mb-4 h-16 w-16 md:h-20 md:w-20"
+          />
+
+          {/* Brand wordmark */}
+          <h1 className="font-display text-5xl font-medium tracking-tight text-plum-900 md:text-7xl lg:text-8xl">
+            rév{" "}
+            <span className="italic">&amp;</span>
             <br />
-            <span className="text-indigo-400">
-              with readiness.
-            </span>
+            ready
           </h1>
 
-          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-neutral-400">
+          <p className="mt-8 max-w-lg text-lg leading-relaxed text-plum-500 md:text-xl">
             We help nonprofits build the strategy, systems, and stories they
             need to win grants — from research and eligibility through writing
             and submission.
           </p>
 
-          <div className="mt-8 flex flex-col items-center gap-4">
+          <div className="mt-10 flex flex-col items-start gap-4">
             <button
               onClick={handleGetStarted}
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+              className="rounded-2xl border-4 border-brand-orange-border bg-brand-orange px-6 py-3 text-base font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] md:px-8 md:py-4 md:text-xl"
             >
-              <IconRocket className="h-4 w-4" />
-              Start Your Grant Assessment
+              Start an assessment →
             </button>
             <button
               onClick={handleAdmin}
-              className="text-sm text-neutral-500 transition-colors hover:text-indigo-400"
+              className="rounded-2xl border-4 border-plum-300 bg-plum-400 px-6 py-3 text-base font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] md:px-8 md:py-4 md:text-xl"
             >
-              I&apos;m a consultant →
+              Continue with an existing app →
             </button>
           </div>
         </motion.div>
       </section>
 
-      {/* ── Services ───────────────────────────────────── */}
-      <section id="services" className="scroll-mt-14 px-6 py-16 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="mx-auto max-w-4xl"
-        >
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              How We Help
+      {/* ── Feature: Grant Readiness ──────────────────── */}
+      <section className="bg-cream-100 px-6 py-20 md:px-24 md:py-32">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 md:flex-row md:gap-20">
+          {/* Image placeholder */}
+          <div className="h-64 w-full shrink-0 rounded-2xl bg-gradient-to-b from-cream-200 to-cream-100 md:h-[400px] md:w-[420px]" />
+
+          {/* Text content */}
+          <motion.div
+            initial={fadeX}
+            whileInView={visible}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-start gap-6"
+          >
+            <span className="rounded-lg bg-plum-50 px-4 py-2 text-sm font-medium text-plum-600 md:text-base">
+              End-to-End Grant Support
+            </span>
+            <h2 className="font-display text-4xl font-medium tracking-tight text-plum-600 md:text-5xl">
+              Grant funding starts
+              <br />
+              with readiness.
             </h2>
-            <p className="mt-2 text-sm text-gray-500 dark:text-neutral-500">
-              End-to-end grant support — from finding the right opportunity to
-              submitting a winning proposal.
+            <p className="max-w-md text-base leading-relaxed text-neutral-600 md:text-lg">
+              We provide end-to-end grant support — from finding the right
+              opportunity to submitting a winning proposal.
             </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SERVICES.map((service, i) => {
-              const Icon = service.icon;
-              return (
-                <motion.div
-                  key={service.name}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.12 + i * 0.04, duration: 0.3 }}
-                  className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
-                >
-                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {service.name}
-                  </h3>
-                  <p className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-neutral-500">
-                    {service.description}
-                  </p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ── Value props ────────────────────────────────── */}
-      <section id="why-us" className="scroll-mt-14 border-t border-gray-200 bg-white px-6 py-16 dark:border-neutral-800 dark:bg-neutral-900 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.4 }}
-          className="mx-auto max-w-4xl"
-        >
-          <div className="grid gap-8 md:grid-cols-3">
-            {VALUE_PROPS.map((prop) => {
-              const Icon = prop.icon;
-              return (
-                <div key={prop.title} className="text-center md:text-left">
-                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 md:mx-0">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {prop.title}
-                  </h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-neutral-500">
-                    {prop.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ── CTA / Role picker ──────────────────────────── */}
-      <section id="get-started" className="scroll-mt-14 px-6 py-16 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className="mx-auto max-w-md"
-        >
-          <div className="mb-8 text-center">
-            <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Ready to get started?
-            </h2>
-            <p className="mt-2 text-sm text-gray-500 dark:text-neutral-500">
-              Tell us about your organization and we&apos;ll match you with the
-              right support.
-            </p>
-          </div>
-
-          <div className="space-y-3">
             <button
               onClick={handleGetStarted}
-              className="group flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 text-left transition-all hover:border-indigo-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500"
+              className="text-lg font-semibold text-plum-400 transition-colors hover:text-plum-600"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                <IconRocket className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Get Started
-                </div>
-                <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">
-                  Get a free grant readiness assessment for your organization
-                </div>
-              </div>
-              <IconArrowRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-indigo-500 dark:text-neutral-600" />
+              Get Started →
             </button>
+          </motion.div>
+        </div>
+      </section>
 
-            <button
-              onClick={handleAdmin}
-              className="group flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 text-left transition-all hover:border-indigo-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-                <IconLayoutDashboard className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Grant Consultant
-                </div>
-                <div className="mt-0.5 text-xs text-gray-500 dark:text-neutral-500">
-                  Manage your portfolio, assess readiness, and source grants
-                </div>
-              </div>
-              <IconArrowRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-indigo-500 dark:text-neutral-600" />
-            </button>
+      {/* ── Center statement ──────────────────────────── */}
+      <section className="flex flex-col items-center justify-center bg-cream-100 px-6 py-24 md:py-40">
+        <motion.div
+          initial={fade}
+          whileInView={visible}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center gap-6"
+        >
+          {/* Floral ornament */}
+          <div className="flex items-center gap-2">
+            <img
+              src="/brand/floral-right.svg"
+              alt=""
+              className="h-12 w-28 rotate-180 opacity-80 md:h-16 md:w-36"
+            />
+            <img
+              src="/brand/floral-left.svg"
+              alt=""
+              className="h-12 w-28 opacity-80 md:h-16 md:w-36"
+            />
           </div>
+          <h2 className="max-w-2xl text-center font-display text-4xl font-medium tracking-tight text-plum-800 md:text-5xl lg:text-6xl">
+            Your nonprofit&apos;s grant strategy, simplified.
+          </h2>
         </motion.div>
+      </section>
+
+      {/* ── Feature: Consulting upsell ────────────────── */}
+      <section className="bg-cream-100 px-6 py-20 md:px-24 md:py-32">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 md:flex-row md:gap-20">
+          {/* Image placeholder */}
+          <div className="h-64 w-full shrink-0 rounded-2xl bg-gradient-to-b from-cream-200 to-cream-100 md:h-[400px] md:w-[420px]" />
+
+          {/* Text content */}
+          <motion.div
+            initial={fadeX}
+            whileInView={visible}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-start gap-6"
+          >
+            <span className="rounded-lg bg-plum-50 px-4 py-2 text-sm font-medium text-plum-600 md:text-base">
+              End-to-End Grant Support
+            </span>
+            <h2 className="font-display text-4xl font-medium tracking-tight text-plum-600 md:text-5xl">
+              Need a broader
+              <br />
+              fundraising strategy?
+            </h2>
+            <p className="max-w-md text-base leading-relaxed text-neutral-600 md:text-lg">
+              Ready Set Grants is a Rev Noir Consulting product. For customized
+              development strategy, infrastructure, and ongoing consulting,
+              explore Rev Noir Consulting.
+            </p>
+            <a
+              href="https://revnoirconsulting.com"
+              className="text-lg font-semibold text-plum-400 transition-colors hover:text-plum-600"
+            >
+              Get in Touch →
+            </a>
+          </motion.div>
+        </div>
       </section>
 
       {/* ── Footer ─────────────────────────────────────── */}
-      <footer className="border-t border-gray-200 px-6 py-6 text-center dark:border-neutral-800">
-        <p className="text-[11px] text-gray-400 dark:text-neutral-600">
-          Working prototype · Not a finished product
-        </p>
+      <footer className="bg-plum-700 px-6 py-20 md:px-10 md:py-32">
+        <div className="mx-auto max-w-7xl">
+          {/* Large brand wordmark */}
+          <div className="mb-16 flex flex-col gap-2">
+            <img
+              src="/brand/logo-mark-light.svg"
+              alt=""
+              className="mb-2 h-20 w-20 md:h-28 md:w-28"
+            />
+            <p className="font-display text-6xl font-medium tracking-tight text-plum-900 md:text-8xl lg:text-9xl">
+              rév <span className="italic">&amp;</span>
+              <br />
+              ready
+            </p>
+          </div>
+
+          {/* Legal + social row */}
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div className="flex flex-wrap items-center gap-6 text-sm text-plum-100/60 md:text-base">
+              <span>&copy; 2026 Rev &amp; Ready All rights reserved.</span>
+              <a href="#" className="transition-colors hover:text-plum-100">
+                Privacy Policy
+              </a>
+              <a href="#" className="transition-colors hover:text-plum-100">
+                Terms of Service
+              </a>
+            </div>
+            <div className="flex items-center gap-6">
+              <a
+                href="#"
+                className="text-plum-100/60 transition-colors hover:text-plum-100"
+                aria-label="Facebook"
+              >
+                <IconBrandFacebook className="h-7 w-7" />
+              </a>
+              <a
+                href="#"
+                className="text-plum-100/60 transition-colors hover:text-plum-100"
+                aria-label="Instagram"
+              >
+                <IconBrandInstagram className="h-7 w-7" />
+              </a>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );

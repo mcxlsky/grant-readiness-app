@@ -7,8 +7,30 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        display: ["Playfair Display", "Georgia", "serif"],
       },
       colors: {
+        cream: {
+          50: "#faf8f5",
+          100: "#f7f3ee",
+          200: "#f0e8df",
+        },
+        plum: {
+          50: "#e6dae8",
+          100: "#d4c9d4",
+          200: "#964db4",
+          300: "#6c3484",
+          400: "#5b2463",
+          500: "#543e54",
+          600: "#47174d",
+          700: "#2f0f33",
+          800: "#240c27",
+          900: "#594659",
+        },
+        brand: {
+          orange: "#ff5100",
+          "orange-border": "#a73704",
+        },
         neutral: {
           950: "#0a0a0a",
         },
