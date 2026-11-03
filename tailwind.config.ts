@@ -29,7 +29,10 @@ const config: Config = {
         },
         brand: {
           orange: "#ff5100",
-          "orange-border": "#a73704",
+          "orange-border": "#e64900",
+          "orange-light": "#ff7a2e",
+          "orange-deep": "#f03a00",
+          "plum-drift": "#7a526e",
         },
         neutral: {
           950: "#0a0a0a",

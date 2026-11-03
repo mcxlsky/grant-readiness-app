@@ -26,6 +26,66 @@ html {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* ── Button hover sheen ────────────────────────────────── */
+.btn-sheen {
+  background-size: 200% 100%;
+}
+
+@media (hover: hover) {
+  .btn-sheen:hover {
+    background-image: linear-gradient(
+      110deg,
+      theme("colors.brand.orange-deep") 0%,
+      theme("colors.brand.orange") 35%,
+      theme("colors.brand.orange-light") 65%,
+      theme("colors.brand.orange") 100%
+    );
+    animation: btn-drift 2.5s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes btn-drift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes btn-sheen {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-sheen:hover {
+    animation: none;
+  }
+}
+
+/* ── Hero brand gradient ───────────────────────────────── */
+.brand-drift {
+  background-image: linear-gradient(
+    110deg,
+    theme("colors.plum.900") 0%,
+    theme("colors.brand.plum-drift") 50%,
+    theme("colors.plum.900") 100%
+  );
+  background-size: 200% 100%;
+  animation: btn-sheen 8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-drift {
+    animation: none;
+  }
+}
+
 /* ── Score bar animation ───────────────────────────────── */
 .bar-fill-animated {
   transition: width 800ms cubic-bezier(0.4, 0, 0.2, 1);
