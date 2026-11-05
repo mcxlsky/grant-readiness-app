@@ -57,7 +57,7 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin" }: P
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-10 z-50 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
+            className="absolute right-0 top-10 z-50 w-48 overflow-hidden rounded-lg border border-gray-200/70 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
           >
             <div className="border-b border-gray-100 px-3 py-2.5 dark:border-neutral-700">
               <div className="text-xs font-semibold text-gray-800 dark:text-neutral-200">

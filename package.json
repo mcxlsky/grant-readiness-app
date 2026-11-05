@@ -1,7 +1,7 @@
 {
   "name": "grant-readiness-app",
   "version": "2.0.0",
-  "description": "Ready Set Grants — Grant readiness consultant dashboard",
+  "description": "Rev & Ready — Grant readiness consultant dashboard",
   "private": true,
   "scripts": {
     "dev": "next dev",

@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     try {
       const resp = await fetch(url, {
         signal: AbortSignal.timeout(4000),
-        headers: { "User-Agent": "ReadySetGrants/1.0" },
+        headers: { "User-Agent": "RevAndReady/1.0" },
         redirect: "follow",
       });
 

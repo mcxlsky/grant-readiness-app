@@ -271,8 +271,8 @@ function PortalContent() {
           className="w-full max-w-md"
         >
           <div className="mb-10 flex flex-col items-center">
-            <div className="mb-3 h-8 w-10 rounded-tl-xl rounded-tr-sm rounded-br-xl rounded-bl-sm bg-indigo-500" />
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <span aria-hidden="true" className="block mb-3 h-10 w-10 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+            <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
               Applicant Portal
             </h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-neutral-500">
@@ -281,7 +281,7 @@ function PortalContent() {
           </div>
 
           {notFound ? (
-            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
               <IconCircleDot className="mx-auto mb-3 h-8 w-8 text-gray-300 dark:text-neutral-600" />
               <p className="text-sm font-medium text-gray-700 dark:text-neutral-300">
                 Application not found
@@ -323,7 +323,7 @@ function PortalContent() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.org"
                       required
-                      className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
+                      className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
                       autoFocus
                     />
                   </div>
@@ -357,11 +357,11 @@ function PortalContent() {
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-gray-50 dark:bg-neutral-950">
       {/* Top nav */}
-      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
+      <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-transparent bg-gray-50/85 backdrop-blur-md px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
         <a href="/?choose=1" className="flex items-center gap-2">
-          <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
+          <span aria-hidden="true" className="block h-6 w-6 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
           <span className="text-sm font-semibold text-gray-900 dark:text-white">
-            Ready Set Grants
+            Rev &amp; Ready
           </span>
         </a>
         <div className="flex items-center gap-2.5">
@@ -395,7 +395,7 @@ function PortalContent() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-10 z-50 w-48 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
+                    className="absolute right-0 top-10 z-50 w-48 overflow-hidden rounded-xl border border-gray-200/70 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
                   >
                     <button
                       onClick={() => { setView("documents"); setProfileOpen(false); }}
@@ -429,7 +429,7 @@ function PortalContent() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — desktop */}
-        <aside className="hidden w-[220px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
+        <aside className="hidden w-[220px] shrink-0 flex-col border-r border-transparent bg-gray-50/85 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900 md:flex">
           <div className="flex-1 px-3 py-4">
             <nav className="space-y-0.5">
               {NAV_ITEMS.map((item) => {
@@ -479,8 +479,8 @@ function PortalContent() {
                           "shrink-0 rounded-xl border px-4 py-3 text-left transition-all",
                           allApps.length === 1 ? "flex-1" : "min-w-[240px] max-w-[300px]",
                           selected
-                            ? "border-indigo-300 bg-white shadow-sm ring-1 ring-indigo-200 dark:border-indigo-500/40 dark:bg-neutral-900 dark:ring-indigo-500/20"
-                            : "border-gray-200 bg-white/60 hover:border-gray-300 hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/40 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
+                            ? "border-indigo-300 bg-gray-50 shadow-sm ring-1 ring-indigo-200 dark:border-indigo-500/40 dark:bg-neutral-900 dark:ring-indigo-500/20"
+                            : "border-transparent bg-white/60 hover:border-gray-200 hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/40 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
                         )}
                       >
                         <div className={cn(
@@ -655,7 +655,7 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                   return (
                     <div
                       key={g.id}
-                      className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+                      className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
@@ -797,7 +797,7 @@ function OrgPanel({ app, org, onUnlock }: { app: GrantApplication; org: Portfoli
 
   return (
     <>
-      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+      <h1 className="mb-1 text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
         {app.orgName}
       </h1>
       <p className="mb-5 text-sm text-gray-500 dark:text-neutral-500">
@@ -823,7 +823,7 @@ function OrgPanel({ app, org, onUnlock }: { app: GrantApplication; org: Portfoli
           { label: "Digital Presence", score: readiness.digital.score },
         ];
         return (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center gap-5">
               <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
                 <svg className="h-20 w-20 -rotate-90" viewBox="0 0 72 72">
@@ -888,7 +888,7 @@ function OrgPanel({ app, org, onUnlock }: { app: GrantApplication; org: Portfoli
 
       {/* Action items */}
       {actionItems.length > 0 && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
             Action Items
           </h3>
@@ -970,7 +970,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
 
   return (
     <>
-      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+      <h1 className="mb-1 text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
         Documents
       </h1>
       <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
@@ -978,7 +978,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
       </p>
 
       {/* Intake form (always present) */}
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
           Submitted
         </h3>
@@ -998,7 +998,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
 
       {/* Uploaded documents */}
       {uploadedDocs.length > 0 && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
             Uploaded Documents
           </h3>
@@ -1036,7 +1036,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
 
       {/* Required documents */}
       {requiredDocs.length > 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
             Required for Assessment
           </h3>
@@ -1080,11 +1080,11 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
 function MessagesPanel() {
   return (
     <>
-      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+      <h1 className="mb-1 text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
         Messages
       </h1>
       <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
-        Communication from the Ready Set Grants team.
+        Communication from the Rev &amp; Ready team.
       </p>
 
       <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-10 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
@@ -1174,7 +1174,7 @@ function ApplicantReviewModal({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 8, scale: 0.97 }}
         transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
-        className="flex w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
+        className="flex w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200/70 bg-gray-50 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
         style={{ maxHeight: "85vh" }}
       >
         {/* Header */}
@@ -1213,7 +1213,7 @@ function ApplicantReviewModal({
                 </span>
                 {q}
               </div>
-              <div className="rounded-md bg-white px-3 py-2.5 text-sm leading-relaxed text-gray-700 dark:bg-neutral-900 dark:text-neutral-300">
+              <div className="rounded-md bg-gray-50 px-3 py-2.5 text-sm leading-relaxed text-gray-700 dark:bg-neutral-900 dark:text-neutral-300">
                 {(answers[i] ?? "").trim() || (
                   <span className="italic text-gray-300 dark:text-neutral-600">No answer yet</span>
                 )}
@@ -1292,7 +1292,7 @@ function HelpPanel() {
 
   return (
     <>
-      <h1 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+      <h1 className="mb-1 text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
         Help
       </h1>
       <p className="mb-6 text-sm text-gray-500 dark:text-neutral-500">
@@ -1303,7 +1303,7 @@ function HelpPanel() {
         {faqs.map((faq, i) => (
           <div
             key={i}
-            className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+            className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900"
           >
             <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
               {faq.q}
@@ -1316,7 +1316,7 @@ function HelpPanel() {
       </div>
 
       {/* Contact */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
           Contact Support
         </h3>

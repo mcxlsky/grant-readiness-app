@@ -125,10 +125,10 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
   const isAdded = (einNum: number) => portfolio.some((o) => o.ein === einNum);
 
   const inputClass =
-    "w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-base md:text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500";
+    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base md:text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500";
 
   const selectClass =
-    "w-full rounded-lg border border-gray-300 bg-gray-50 pl-3 pr-8 py-2 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white";
+    "w-full rounded-lg border border-gray-300 bg-white pl-3 pr-8 py-2 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white";
 
   return (
     <AnimatePresence>
@@ -145,7 +145,7 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="flex max-h-[85vh] md:max-h-[75vh] w-full md:w-[560px] md:max-w-[92vw] flex-col overflow-hidden rounded-t-xl md:rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+            className="flex max-h-[85vh] md:max-h-[75vh] w-full md:w-[560px] md:max-w-[92vw] flex-col overflow-hidden rounded-t-xl md:rounded-xl border border-gray-200/70 bg-gray-50 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
           >
             {/* Tab header */}
             <div className="flex border-b border-gray-200 dark:border-neutral-800">
@@ -315,7 +315,7 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search by name"
-                        className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-9 pr-3 text-base md:text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
+                        className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-base md:text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
                         autoFocus
                       />
                     </div>
@@ -326,7 +326,7 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                       <select
                         value={searchState}
                         onChange={(e) => setSearchState(e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-3 pr-8 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                        className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-3 pr-8 text-base md:text-sm text-gray-900 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
                       >
                         <option value="">State</option>
                         {US_STATES.map((s) => (

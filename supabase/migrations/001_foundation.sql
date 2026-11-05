@@ -1,5 +1,5 @@
 -- ============================================================
--- Ready Set Grants — Lifecycle Foundation Schema
+-- Rev & Ready — Lifecycle Foundation Schema
 -- Run this in the Supabase SQL Editor (supabase.com/dashboard)
 -- ============================================================
 

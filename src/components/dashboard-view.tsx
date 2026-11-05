@@ -31,9 +31,9 @@ interface DashboardViewProps {
 }
 
 function ringColor(key: string) {
-  if (key === "financial") return "#6366f1";
-  if (key === "compliance") return "#3b82f6";
-  return "#f59e0b";
+  if (key === "financial") return "#8b5193";
+  if (key === "compliance") return "#6b84a2";
+  return "#bd8b42";
 }
 
 function barGradient(key: string) {
@@ -163,7 +163,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <OrgLogo org={org} />
           <div className="min-w-0">
-            <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+            <h1 className="text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
               {orgData.name}
             </h1>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500 dark:text-neutral-500">
@@ -211,7 +211,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
             score={readiness.overall}
             size={48}
             stroke={4}
-            color={readiness.overall >= 80 ? "#10b981" : readiness.overall >= 65 ? "#f59e0b" : "#ef4444"}
+            color={readiness.overall >= 80 ? "#6e937c" : readiness.overall >= 65 ? "#bd8b42" : "#cd6354"}
             label="Readiness"
           />
         )}
@@ -233,7 +233,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
       <div className="space-y-4">
         {/* Project info — thread from intake */}
         {matchingApp?.projectTitle && (
-          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="mb-3 flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-500/10">
                 <IconBriefcase className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -280,7 +280,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
         )}
 
         {/* Grant opportunities — PRIMARY CONTENT */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <div className="mb-1 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h2 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
@@ -386,7 +386,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
         </div>
 
         {/* Collapsible org details */}
-        <div className="rounded-xl border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900">
           <button
             onClick={() => setDetailsOpen(!detailsOpen)}
             className="flex w-full items-center justify-between px-5 py-3"

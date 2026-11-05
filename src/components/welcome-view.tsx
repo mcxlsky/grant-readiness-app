@@ -168,7 +168,7 @@ function SortDropdown({ sortBy, onSortChange }: { sortBy: SortOption; onSortChan
       {open && pos && (
         <div
           ref={menuRef}
-          className="fixed z-[9999] min-w-[180px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
+          className="fixed z-[9999] min-w-[180px] rounded-lg border border-gray-200/70 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
           style={{ top: pos.top, right: pos.right }}
         >
           {SORT_OPTIONS.map((opt) => (
@@ -266,8 +266,8 @@ export function WelcomeView({
   if (!hasOrgs) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Welcome to Ready Set Grants
+        <h2 className="text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
+          Welcome to Rev &amp; Ready
         </h2>
         <p className="mt-2 max-w-sm text-sm text-gray-500 dark:text-neutral-500">
           Search for nonprofits, assess their grant readiness, and track them
@@ -300,7 +300,7 @@ export function WelcomeView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-neutral-700 dark:bg-neutral-900"
+              className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 dark:border-neutral-700 dark:bg-neutral-900"
             >
               <IconSearch className="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-neutral-500" />
               <input
@@ -327,7 +327,7 @@ export function WelcomeView({
               transition={{ duration: 0.15 }}
               className="flex flex-1 items-center gap-1.5"
             >
-              <h2 className="flex-1 text-sm font-semibold text-gray-900 dark:text-white">
+              <h2 className="flex-1 font-display text-2xl font-medium tracking-tight text-gray-900 dark:text-white">
                 {externalFilter === "ready"
                   ? "Grant-Ready"
                   : externalFilter === "needs_work"
@@ -336,7 +336,7 @@ export function WelcomeView({
                 {(() => {
                   const newCount = filtered.filter((o) => !viewedEins.has(o.ein)).length;
                   return newCount > 0 ? (
-                    <span className="ml-2 text-xs font-normal text-gray-400 dark:text-neutral-500">
+                    <span className="ml-2 font-sans text-xs font-normal tracking-normal text-gray-500 dark:text-neutral-500">
                       {newCount} new
                     </span>
                   ) : null;
@@ -371,7 +371,7 @@ export function WelcomeView({
             : "No organizations in this category"}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="-mx-4 dark:bg-neutral-900">
           {filtered.map((org, i) => {
             const isAssessing = assessingEins.has(org.ein);
             const app = appByEin.get(org.ein);
@@ -384,12 +384,21 @@ export function WelcomeView({
             return (
               <div
                 key={org.ein}
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectOrg?.(org.ein)}
+                onKeyDown={(e) => {
+                  if (e.target !== e.currentTarget) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectOrg?.(org.ein);
+                  }
+                }}
                 className={`
-                  flex cursor-pointer items-center gap-2.5 px-3 py-2.5
-                  transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/60
-                  ${i > 0 ? "border-t border-gray-100 dark:border-neutral-800/60" : ""}
-                  ${isUnread ? "bg-white dark:bg-neutral-900" : "bg-gray-50/40 dark:bg-neutral-900/60"}
+                  flex cursor-pointer items-center gap-3 px-4 py-3.5 outline-none focus-visible:bg-gray-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/40
+                  transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800/60
+                  ${i > 0 ? "border-t border-gray-200 dark:border-neutral-800/60" : ""}
+                  ${isUnread ? "dark:bg-neutral-900" : "dark:bg-neutral-900/60"}
                 `}
               >
                 {/* Avatar with score ring + badge */}
@@ -399,26 +408,26 @@ export function WelcomeView({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`truncate text-[13px] ${
+                      className={`truncate text-sm ${
                         isUnread
                           ? "font-semibold text-gray-900 dark:text-white"
-                          : "font-medium text-gray-600 dark:text-neutral-400"
+                          : "font-medium text-gray-700 dark:text-neutral-300"
                       }`}
                     >
                       {org.name}
                     </span>
                     {location && (
-                      <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">
+                      <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
                         {location}
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 truncate text-[12px] text-gray-400 dark:text-neutral-500">
+                  <p className="mt-0.5 truncate text-[13px] text-gray-500 dark:text-neutral-400">
                     {app?.projectTitle
                       ? `${app.projectTitle}${app.amountRequested ? ` · ${app.amountRequested}` : ""}`
                       : "No project added"}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-gray-300 dark:text-neutral-600">
+                  <p className="mt-1 text-xs text-gray-400 dark:text-neutral-400">
                     Submitted {new Date(submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </p>
                 </div>
@@ -429,16 +438,17 @@ export function WelcomeView({
                     {onDeclineOrg && (
                       <button
                         onClick={(e) => { e.stopPropagation(); onDeclineOrg(org.ein); }}
-                        className="rounded-md border border-gray-200 p-1.5 text-gray-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500 dark:border-neutral-700 dark:text-neutral-500 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                        className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
                         title="Decline"
+                        aria-label="Decline"
                       >
-                        <IconX className="h-3 w-3" />
+                        <IconX className="h-4 w-4" />
                       </button>
                     )}
                     {onStartProspecting && (
                       <button
                         onClick={(e) => { e.stopPropagation(); onStartProspecting(org.ein); }}
-                        className="rounded-md bg-indigo-600 px-3 py-1.5 text-[11px] font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                        className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                       >
                         Accept
                       </button>

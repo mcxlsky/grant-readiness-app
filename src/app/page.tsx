@@ -210,7 +210,7 @@ function FadeStack({
   });
 
   return (
-    <div className="relative bg-cream-100">
+    <div className="relative bg-gray-50">
       <div data-fade-frame className="sticky top-0 h-screen overflow-hidden">
         <img
           src="/brand/palm-leaf-upright.svg"
@@ -232,6 +232,15 @@ function FadeStack({
         )}
       </div>
       <div ref={track} style={{ height: `${(slides.length - 1) * 100}vh` }} />
+      {slides.map((slide, i) => (
+        <div
+          key={slide.label}
+          aria-hidden="true"
+          data-snap-point
+          className="pointer-events-none absolute left-0 h-screen w-px snap-start"
+          style={{ top: `${i * 100}vh` }}
+        />
+      ))}
     </div>
   );
 }
@@ -263,7 +272,7 @@ export default function LandingPage() {
   if (!ready) return null;
 
   return (
-    <div className="min-h-screen bg-cream-50">
+    <div className="min-h-screen bg-gray-50">
       <FadeStack
         slides={[
           {
@@ -366,7 +375,7 @@ export default function LandingPage() {
                       fundraising strategy?
                     </h2>
                     <p className="max-w-md text-base leading-relaxed text-neutral-600 md:text-lg">
-                      Ready Set Grants is a Rev Noir Consulting product. For
+                      Rev &amp; Ready is a Rev Noir Consulting product. For
                       customized development strategy, infrastructure, and
                       ongoing consulting, explore Rev Noir Consulting.
                     </p>
@@ -383,7 +392,7 @@ export default function LandingPage() {
           },
         ]}
         footer={
-          <footer className="bg-cream-200 px-6 py-5 md:px-10 md:py-6">
+          <footer className="bg-gray-100 px-6 py-5 md:px-10 md:py-6">
             <div className="mx-auto flex max-w-7xl items-center gap-4 md:gap-10">
               <span
                 aria-hidden="true"

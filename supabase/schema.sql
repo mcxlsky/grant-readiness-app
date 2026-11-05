@@ -1,4 +1,4 @@
--- Ready Set Grants — Supabase schema + seed data
+-- Rev & Ready — Supabase schema + seed data
 -- Run this in the Supabase SQL Editor (Dashboard → SQL Editor → New query)
 
 -- ══════════════════════════════════════════════════

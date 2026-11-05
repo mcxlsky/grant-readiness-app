@@ -59,7 +59,7 @@ export function IntakeView({ org, onAnalysisComplete, onBack }: IntakeViewProps)
 
       {/* Org header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
           {org.name}
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-neutral-500">
@@ -71,7 +71,7 @@ export function IntakeView({ org, onAnalysisComplete, onBack }: IntakeViewProps)
       </div>
 
       {/* Analyze card */}
-      <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10">
           <IconAnalyze className="h-6 w-6 text-indigo-500 dark:text-indigo-400" />
         </div>
@@ -98,7 +98,7 @@ export function IntakeView({ org, onAnalysisComplete, onBack }: IntakeViewProps)
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
             placeholder="Website URL (recommended)"
-            className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
+            className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
           />
           <button
             type="submit"

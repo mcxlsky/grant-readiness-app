@@ -142,7 +142,7 @@ function GrantSearchModal({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 8, scale: 0.97 }}
         transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
-        className="w-full max-w-lg overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
+        className="w-full max-w-lg overflow-hidden rounded-xl border border-gray-200/70 bg-gray-50 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5 dark:border-neutral-800">
@@ -176,7 +176,7 @@ function GrantSearchModal({
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 dark:border-neutral-700 dark:bg-neutral-800 dark:focus-within:border-indigo-500/50 dark:focus-within:ring-indigo-500/10">
+          <div className="flex items-center gap-2.5 rounded-lg border border-gray-200 bg-white px-3 py-2 focus-within:border-brand-sky-deep focus-within:ring-2 focus-within:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:focus-within:border-indigo-500/50 dark:focus-within:ring-indigo-500/10">
             <IconSearch className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" />
             <input
               ref={inputRef}
@@ -304,7 +304,7 @@ function ModalGrantCard({
 
   return (
     <div className={cn(
-      "rounded-xl border border-gray-200 bg-white p-4 transition-colors dark:border-neutral-800 dark:bg-neutral-900",
+      "rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors dark:border-neutral-800 dark:bg-neutral-900",
       already && "opacity-50"
     )}>
       {/* Header */}
@@ -441,7 +441,7 @@ function PitchedGrantRow({
   const isTerminal = grant.status === "awarded" || grant.status === "declined";
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
       {/* Header: funder name + status label (hidden when obvious from context) */}
       <div className="flex items-start justify-between gap-1.5">
         <span className="min-w-0 truncate text-xs font-semibold text-gray-800 dark:text-neutral-200">
@@ -476,7 +476,7 @@ function PitchedGrantRow({
             {grant.matchPct}% fit
           </span>
         )}
-        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
+        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-600 dark:bg-neutral-800 dark:text-neutral-300">
           {fmt$(grant.avgGrant)} grant
         </span>
         <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
@@ -642,7 +642,7 @@ function DraftAnswersModal({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 8, scale: 0.97 }}
         transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
-        className="flex w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
+        className="flex w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-gray-200/70 bg-gray-50 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900"
         style={{ maxHeight: "85vh" }}
       >
         {/* Header */}
@@ -716,7 +716,7 @@ function DraftAnswersModal({
                   placeholder="Write your answer…"
                   rows={3}
                   className={cn(
-                    "w-full rounded-lg border bg-gray-50 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none transition-colors dark:bg-neutral-800 dark:text-neutral-300 dark:placeholder-neutral-500",
+                    "w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none transition-colors dark:bg-neutral-800 dark:text-neutral-300 dark:placeholder-neutral-500",
                     comment
                       ? "border-orange-200 focus:border-orange-300 focus:ring-2 focus:ring-orange-100 dark:border-orange-500/30 dark:focus:border-orange-500/50 dark:focus:ring-orange-500/10"
                       : "border-gray-200 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100 dark:border-neutral-700 dark:focus:border-amber-500/50 dark:focus:ring-amber-500/10"
@@ -900,7 +900,7 @@ export function PipelineView({
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-neutral-800">
             <IconTargetArrow className="h-6 w-6 text-gray-400 dark:text-neutral-500" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
             No organizations in the pipeline
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-neutral-500">
@@ -973,7 +973,7 @@ export function PipelineView({
                 return (
                   <div
                     key={org.ein}
-                    className="rounded-xl border border-gray-200 bg-white transition-colors dark:border-neutral-800 dark:bg-neutral-900"
+                    className="rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900"
                   >
                     {/* Org header */}
                     <div className="flex w-full items-center gap-3 p-4">
@@ -1053,10 +1053,10 @@ export function PipelineView({
                                   {m.match_pct}% fit
                                 </span>
                               )}
-                              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">
+                              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-600 dark:bg-neutral-800 dark:text-neutral-400">
                                 {fmt$(m.avg_grant)} grant
                               </span>
-                              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-400 dark:bg-neutral-800 dark:text-neutral-500">
+                              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-500">
                                 Due {m.deadline}
                               </span>
                               <button

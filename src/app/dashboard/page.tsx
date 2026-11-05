@@ -382,10 +382,10 @@ export default function Home() {
             >
               <span className="text-sm">‹</span> {backLabel}
             </button>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
               {activeOrg.name}
             </h1>
-            <div className="mt-8 rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
               <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-indigo-500 dark:border-neutral-700 dark:border-t-indigo-400" />
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                 Running Readiness Assessment
@@ -467,14 +467,14 @@ export default function Home() {
       )}
     >
       {/* Full-width top nav */}
-      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
+      <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-transparent bg-gray-50/85 backdrop-blur-md px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
         <a
           href="/?choose=1"
           className="flex cursor-pointer items-center gap-2"
         >
-          <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-indigo-500" />
+          <span aria-hidden="true" className="block h-6 w-6 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
           <span className="text-sm font-semibold text-gray-900 dark:text-white">
-            Ready Set Grants
+            Rev &amp; Ready
           </span>
         </a>
         <ProfileDropdown theme={theme} onToggleTheme={toggleTheme} adminName={adminName} />
@@ -485,7 +485,7 @@ export default function Home() {
         {/* Desktop sidebar */}
         <div
           className={cn(
-            "hidden h-full shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] duration-200 ease-in-out dark:border-neutral-800 dark:bg-neutral-900 md:flex",
+            "hidden h-full shrink-0 flex-col border-r border-transparent bg-gray-50/85 backdrop-blur-md transition-[width] duration-200 ease-in-out dark:border-neutral-800 dark:bg-neutral-900 md:flex",
             sidebarOpen ? "w-[220px]" : "w-[52px]"
           )}
         >
@@ -508,12 +508,14 @@ export default function Home() {
           <div className="mx-auto w-full max-w-[840px] flex-1 px-6 pt-8 pb-8 md:px-10 md:pt-8">
             {renderMainContent()}
           </div>
-          <footer className="mx-auto max-w-[840px] px-6 pb-6 text-xs leading-relaxed text-gray-400 dark:text-neutral-600 md:px-10">
+          <footer className="mx-auto w-full max-w-[840px] px-6 pb-6 md:px-10">
+            <p className="pt-4 text-[11px] leading-relaxed text-gray-400 dark:text-neutral-500">
             Financial and filing data sourced live from the ProPublica Nonprofit
             Explorer API (IRS Form 990 data). Website housekeeping signals come
             from a live scan of the org&apos;s own site. Grant data sourced from
             Grants.gov, Foundation Directory Online, and Corporate Giving
             Database. This is a working prototype, not a finished product.
+            </p>
           </footer>
         </main>
       </div>

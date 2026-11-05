@@ -206,7 +206,7 @@ export function GrantsView({
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by funder, focus area, keyword…"
                   autoFocus
-                  className="w-full rounded-lg border border-gray-200 bg-white py-1.5 pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:placeholder-neutral-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/30"
+                  className="w-full rounded-lg border border-gray-200 bg-white py-1.5 pl-8 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-2 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:placeholder-neutral-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/30"
                   onKeyDown={(e) => {
                     if (e.key === "Escape") {
                       setQuery("");
@@ -256,7 +256,7 @@ export function GrantsView({
                       className="fixed inset-0 z-10"
                       onClick={() => setShowTypeDropdown(false)}
                     />
-                    <div className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
+                    <div className="absolute right-0 z-20 mt-1 w-56 rounded-lg border border-gray-200/70 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
                       <div className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">Sources</div>
                       {sources.map((s, i) => (
                         <button
@@ -302,7 +302,7 @@ export function GrantsView({
                             onChange={(e) => setNewSource(e.target.value)}
                             placeholder="Source name…"
                             autoFocus
-                            className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-indigo-400 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 dark:placeholder:text-neutral-500"
+                            className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-brand-sky-deep dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-300 dark:placeholder:text-neutral-500"
                             onKeyDown={(e) => { if (e.key === "Escape") { setAddingSource(false); setNewSource(""); } }}
                             onBlur={() => {
                               const trimmed = newSource.trim();
@@ -352,7 +352,7 @@ export function GrantsView({
               "rounded-full border px-2.5 py-1 transition-colors",
               typeFilter === t
                 ? "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-400"
-                : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500 dark:hover:border-neutral-600 dark:hover:text-neutral-400"
+                : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300 hover:text-gray-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500 dark:hover:border-neutral-600 dark:hover:text-neutral-400"
             )}
           >
             {t}
@@ -423,7 +423,7 @@ function GrantDatabaseCard({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.02, duration: 0.2 }}
-      className="rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+      className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
     >
       {/* Top row */}
       <div className="flex items-start justify-between gap-3">
@@ -456,7 +456,7 @@ function GrantDatabaseCard({
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
-                    className="absolute left-0 top-full z-20 mt-1 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
+                    className="absolute left-0 top-full z-20 mt-1 w-56 rounded-lg border border-gray-200/70 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
                   >
                     <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
                       Track for organization

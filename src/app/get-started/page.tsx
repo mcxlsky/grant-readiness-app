@@ -2,17 +2,15 @@
 
 import { useState, useRef, useCallback, useEffect, Suspense, type KeyboardEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   IconArrowLeft,
   IconArrowRight,
   IconCheck,
   IconExternalLink,
-  IconChevronDown,
   IconUpload,
   IconFile,
   IconX,
-  IconRocket,
   IconAlertCircle,
   IconPlus,
 } from "@tabler/icons-react";
@@ -289,21 +287,21 @@ function Field({ label, required, children, hint, error }: FieldProps) {
 }
 
 const inputCls =
-  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500";
+  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500";
 
 function inputClsErr(error?: string) {
   return `${inputCls} ${error ? "border-red-400 dark:border-red-500" : "border-gray-300 dark:border-neutral-700"}`;
 }
 
 const selectCls =
-  "w-full appearance-none rounded-lg border bg-white bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_12px_center] bg-no-repeat px-3 py-2.5 pr-10 text-sm text-gray-900 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:bg-neutral-800 dark:text-white";
+  "w-full appearance-none rounded-lg border bg-white bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_12px_center] bg-no-repeat px-3 py-2.5 pr-10 text-sm text-gray-900 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:bg-neutral-800 dark:text-white";
 
 function selectClsErr(error?: string) {
   return `${selectCls} ${error ? "border-red-400 dark:border-red-500" : "border-gray-300 dark:border-neutral-700"}`;
 }
 
 const textareaCls =
-  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500 resize-y";
+  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500 resize-y";
 
 function textareaClsErr(error?: string) {
   return `${textareaCls} ${error ? "border-red-400 dark:border-red-500" : "border-gray-300 dark:border-neutral-700"}`;
@@ -366,22 +364,23 @@ function TagInput({
         {label}
       </span>
       <div
-        className="flex min-h-[42px] flex-wrap gap-1.5 rounded-lg border border-gray-300 bg-white px-2.5 py-2 transition-colors focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800"
+        className="flex min-h-[42px] flex-wrap gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-2 transition-colors focus-within:border-brand-sky-deep focus-within:ring-1 focus-within:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800"
         onClick={() => inputRef.current?.focus()}
       >
         {tags.map((tag) => (
           <span
             key={tag}
-            className="flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+            className="flex items-center gap-1 rounded-md bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
           >
             {tag}
             <button
               type="button"
+              aria-label={`Remove ${tag}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onRemove(tag);
               }}
-              className="rounded-sm p-0.5 transition-colors hover:bg-indigo-100 hover:text-indigo-900 dark:hover:bg-indigo-500/20"
+              className="rounded-sm p-0.5 transition-colors hover:bg-blue-200 hover:text-blue-900 dark:hover:bg-blue-500/20"
             >
               <IconX className="h-2.5 w-2.5" />
             </button>
@@ -409,7 +408,7 @@ function TagInput({
 
       {/* Suggestions dropdown */}
       {showSuggestions && filtered && filtered.length > 0 && (
-        <div className="mt-1 max-h-36 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
+        <div className="mt-1 max-h-36 overflow-y-auto rounded-lg border border-gray-200/70 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
           {filtered.slice(0, 8).map((s) => (
             <button
               key={s}
@@ -436,6 +435,69 @@ function TagInput({
 
 /* ── Page ──────────────────────────────────────────────── */
 
+const BURST_COLORS = ["bg-brand-sky", "bg-indigo-600", "bg-brand-orange", "bg-emerald-600", "bg-amber-400"];
+
+function SuccessBadge() {
+  const prefersReducedMotion = useReducedMotion();
+  const dots = Array.from({ length: 12 }, (_, i) => i);
+
+  return (
+    <div className="relative mb-6 h-16 w-16" aria-hidden="true">
+      {!prefersReducedMotion && (
+        <>
+          <motion.span
+            className="absolute inset-0 rounded-full bg-brand-sky/30"
+            initial={{ scale: 1, opacity: 0.7 }}
+            animate={{ scale: 2.4, opacity: 0 }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+          />
+          {dots.map((i) => {
+            const angle = (i / dots.length) * Math.PI * 2;
+            const distance = i % 2 === 0 ? 64 : 48;
+            return (
+              <motion.span
+                key={i}
+                className={`absolute left-1/2 top-1/2 -ml-1 -mt-1 h-2 w-2 rounded-full ${BURST_COLORS[i % BURST_COLORS.length]}`}
+                initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
+                animate={{
+                  x: Math.cos(angle) * distance,
+                  y: Math.sin(angle) * distance,
+                  scale: [0, 1.2, 0.6],
+                  opacity: [1, 1, 0],
+                }}
+                transition={{ duration: 1, ease: "easeOut", delay: 0.25 }}
+              />
+            );
+          })}
+        </>
+      )}
+      <motion.div
+        className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-sky to-brand-sky-deep shadow-[0_6px_16px_-6px_rgba(58,149,207,0.6)]"
+        initial={prefersReducedMotion ? false : { scale: 0, rotate: -30 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 13 }}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          className="h-8 w-8"
+          fill="none"
+          stroke="white"
+          strokeWidth={3}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <motion.path
+            d="M5 12.5l4.5 4.5L19 7.5"
+            initial={prefersReducedMotion ? false : { pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.45, delay: 0.3, ease: "easeOut" }}
+          />
+        </svg>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function GetStartedPage() {
   return (
     <Suspense>
@@ -451,6 +513,10 @@ function GetStartedContent() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
+  const progressPct = ((step + 1) / STEPS.length) * 100;
+  const progressLabel = `${step + 1} of ${STEPS.length} · ${STEPS[step].label}`;
+  const progressTransition = { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeInOut" as const };
   const [direction, setDirection] = useState(1);
   const [showGrantSection, setShowGrantSection] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -691,15 +757,8 @@ function GetStartedContent() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
         <div className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-6 py-16 text-center">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", duration: 0.5 }}
-            className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10"
-          >
-            <IconCheck className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
-          </motion.div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <SuccessBadge />
+          <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
             You&apos;re All Set!
           </h1>
           <p className="mt-3 max-w-md text-sm text-gray-500 dark:text-neutral-400">
@@ -712,16 +771,15 @@ function GetStartedContent() {
           </p>
           <Link
             href={`/portal?email=${encodeURIComponent(form.contactEmail)}`}
-            className="mt-8 flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+            className="mt-8 flex h-10 items-center gap-2 rounded-lg bg-gray-900 px-6 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-neutral-100 dark:text-gray-900 dark:hover:bg-white"
           >
             <IconExternalLink className="h-4 w-4" />
             Track Your Progress
           </Link>
           <button
             onClick={resetForm}
-            className="mt-3 flex items-center gap-2 rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            className="mt-3 flex h-10 items-center rounded-lg bg-gray-100 px-5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
           >
-            <IconArrowLeft className="h-4 w-4" />
             Submit Another Assessment
           </button>
         </div>
@@ -742,48 +800,60 @@ function GetStartedContent() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-neutral-950">
       {/* ── Top bar ─────────────────────────────── */}
-      <div className="sticky top-0 z-10 shrink-0 border-b border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-3">
+      <div className="sticky top-0 z-10 shrink-0 bg-gray-50/85 backdrop-blur-md dark:bg-neutral-900">
+        <div className="flex items-center justify-between px-6 py-4 md:px-10">
           <Link
             href={fromPortal ? `/portal?email=${encodeURIComponent(fromEmail)}` : "/"}
-            className="flex items-center gap-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+            aria-label={fromPortal ? "Back to portal" : "Rev & Ready home"}
+            className="flex items-center gap-2"
           >
-            <IconArrowLeft className="h-3.5 w-3.5" />
-            <div className="flex items-center gap-1.5">
-              <div className="h-4 w-5 shrink-0 rounded-tl-md rounded-tr-sm rounded-br-md rounded-bl-sm bg-indigo-500" />
-              <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                {fromPortal ? "Back to Portal" : "Ready Set Grants"}
-              </span>
-            </div>
+            <span
+              aria-hidden="true"
+              className="block aspect-[90/88] w-8 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100 md:w-9"
+            />
+            <span
+              aria-hidden="true"
+              className="block aspect-[473/319] w-14 bg-plum-900 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100 md:w-16"
+            />
           </Link>
-          <span className="text-xs text-gray-400 dark:text-neutral-500">
-            Step {step + 1} of {STEPS.length}
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mx-auto max-w-2xl px-6 pb-3">
-          <div className="flex gap-1.5">
-            {STEPS.map((s, i) => (
-              <div
-                key={s.key}
-                className="h-1 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-800"
-              >
-                <motion.div
-                  className="h-full rounded-full bg-indigo-500"
-                  initial={false}
-                  animate={{ width: i <= step ? "100%" : "0%" }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                />
-              </div>
-            ))}
+          <div
+            role="progressbar"
+            aria-label="Assessment progress"
+            aria-valuemin={1}
+            aria-valuemax={STEPS.length}
+            aria-valuenow={step + 1}
+            aria-valuetext={`Step ${step + 1} of ${STEPS.length}: ${STEPS[step].label}`}
+            className="relative h-7 w-52 overflow-hidden rounded-full border border-gray-300 bg-gray-200 dark:border-neutral-700 dark:bg-neutral-800"
+          >
+            <motion.div
+              className="absolute inset-y-0 left-0 rounded-full border border-indigo-700 bg-indigo-600 dark:border-indigo-400 dark:bg-indigo-500"
+              initial={false}
+              animate={{ width: `${progressPct}%` }}
+              transition={progressTransition}
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-neutral-300"
+            >
+              {progressLabel}
+            </span>
+            {/* Same label in white, clipped to the filled part so it stays legible on black */}
+            <motion.span
+              aria-hidden="true"
+              className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white"
+              initial={false}
+              animate={{ clipPath: `inset(0 ${100 - progressPct}% 0 0 round 13px)` }}
+              transition={progressTransition}
+            >
+              {progressLabel}
+            </motion.span>
           </div>
         </div>
       </div>
 
       {/* ── Step content ────────────────────────── */}
-      <div className="flex-1">
-        <div className="mx-auto max-w-2xl px-6 py-10 md:py-14">
+      <div className="flex flex-1 flex-col justify-center">
+        <div className="mx-auto w-full max-w-2xl px-6 py-10 md:py-14">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentStep}
@@ -849,37 +919,42 @@ function GetStartedContent() {
       </div>
 
       {/* ── Bottom nav ──────────────────────────── */}
-      <div className="sticky bottom-0 z-10 shrink-0 border-t border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
+      <div className="sticky bottom-0 z-10 shrink-0 border-t border-transparent bg-gray-50/85 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex items-center justify-between px-6 py-4 md:px-10">
           {step > 0 ? (
             <button
+              type="button"
               onClick={goBack}
-              className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+              className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white"
             >
               <IconArrowLeft className="h-4 w-4" />
               Back
             </button>
           ) : (
-            <div />
+            <Link
+              href={fromPortal ? `/portal?email=${encodeURIComponent(fromEmail)}` : "/"}
+              className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white"
+            >
+              <IconArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
           )}
 
           {isLastStep ? (
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
+              className="flex h-10 items-center gap-2 rounded-lg bg-gray-900 px-6 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:opacity-50 dark:bg-neutral-100 dark:text-gray-900 dark:hover:bg-white"
             >
-              {loading ? (
+              {loading && (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : (
-                <IconRocket className="h-4 w-4" />
               )}
-              Start Your Grant Assessment
+              Done
             </button>
           ) : (
             <button
               onClick={goNext}
-              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+              className="flex h-10 items-center gap-1.5 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-neutral-100 dark:text-gray-900 dark:hover:bg-white"
             >
               Continue
               <IconArrowRight className="h-4 w-4" />
@@ -908,10 +983,10 @@ function StepServices({
 }) {
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">
+      <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white md:text-[28px] md:leading-tight">
         What kind of support are you looking for?
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-neutral-400">
+      <p className="mt-2 text-base leading-relaxed text-gray-500 dark:text-neutral-400">
         Select all that apply — you can always change this later.
       </p>
 
@@ -922,24 +997,25 @@ function StepServices({
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="-mx-4 mt-6 grid grid-cols-1 gap-x-2 gap-y-1 sm:grid-cols-2">
         {SUPPORT_TYPES.map((type) => {
           const selected = supportTypes.includes(type);
           return (
             <button
               key={type}
               type="button"
+              aria-pressed={selected}
               onClick={() => onToggle(type)}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition-all ${
+              className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left text-base transition-colors ${
                 selected
-                  ? "border-indigo-400 bg-indigo-50 font-medium text-indigo-700 shadow-sm dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-neutral-600"
+                  ? "border-indigo-600 bg-plum-50 font-medium text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300"
+                  : "border-transparent bg-transparent text-gray-700 hover:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-neutral-600"
               }`}
             >
               <div
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
                   selected
-                    ? "border-indigo-500 bg-indigo-500 dark:border-indigo-400 dark:bg-indigo-500"
+                    ? "border-indigo-600 bg-indigo-600 dark:border-indigo-400 dark:bg-indigo-500"
                     : "border-gray-300 dark:border-neutral-600"
                 }`}
               >
@@ -983,10 +1059,10 @@ function StepOrganization({
 }) {
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">
+      <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white md:text-[28px] md:leading-tight">
         Tell us about your organization
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-neutral-400">
+      <p className="mt-2 text-base leading-relaxed text-gray-500 dark:text-neutral-400">
         This helps us understand your nonprofit and match you with the right opportunities.
       </p>
       <p className="mt-1.5 text-xs font-medium text-gray-400 dark:text-neutral-500">
@@ -1075,7 +1151,7 @@ function StepOrganization({
             </select>
           </Field>
           <Field label="Number Served Annually">
-            <div className="flex rounded-lg border border-gray-300 transition-colors focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/30 dark:border-neutral-700">
+            <div className="flex rounded-lg border border-gray-300 transition-colors focus-within:border-brand-sky-deep focus-within:ring-1 focus-within:ring-brand-sky/30 dark:border-neutral-700">
               <input
                 type="text"
                 inputMode="numeric"
@@ -1090,7 +1166,7 @@ function StepOrganization({
               <select
                 value={form.numberServedUnit}
                 onChange={set("numberServedUnit")}
-                className="flex-1 appearance-none rounded-l-none rounded-r-lg border-0 border-l border-gray-300 bg-gray-50 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_12px_center] bg-no-repeat px-3 py-2.5 pr-10 text-sm text-gray-500 outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
+                className="flex-1 appearance-none rounded-l-none rounded-r-lg border-0 border-l border-gray-300 bg-white bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_12px_center] bg-no-repeat px-3 py-2.5 pr-10 text-sm text-gray-500 outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
               >
                 {SERVED_UNITS.map((u) => (
                   <option key={u} value={u}>{u}</option>
@@ -1129,10 +1205,10 @@ function StepOrganization({
 function StepContact({ form, set, errors }: { form: FormState; set: SetFn; errors: Errors }) {
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">
+      <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white md:text-[28px] md:leading-tight">
         Who should we reach out to?
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-neutral-400">
+      <p className="mt-2 text-base leading-relaxed text-gray-500 dark:text-neutral-400">
         Your primary contact for this assessment.
       </p>
       <p className="mt-1.5 text-xs font-medium text-gray-400 dark:text-neutral-500">
@@ -1186,10 +1262,10 @@ function StepContact({ form, set, errors }: { form: FormState; set: SetFn; error
 function StepProject({ form, set, errors }: { form: FormState; set: SetFn; errors: Errors }) {
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">
+      <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white md:text-[28px] md:leading-tight">
         Tell us about your project
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-neutral-400">
+      <p className="mt-2 text-base leading-relaxed text-gray-500 dark:text-neutral-400">
         Describe the project or program you&apos;re seeking funding for.
       </p>
       <p className="mt-1.5 text-xs font-medium text-gray-400 dark:text-neutral-500">
@@ -1281,6 +1357,54 @@ function StepProject({ form, set, errors }: { form: FormState; set: SetFn; error
 
 /* ── Step 5: Extras (grant, docs, referral) ────────────── */
 
+function AddSection({
+  label,
+  hint,
+  open,
+  onToggle,
+  children,
+}: {
+  label: string;
+  hint: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={onToggle}
+        className={`flex w-full items-center gap-3 rounded-xl border bg-white px-4 py-3.5 text-left outline-none transition-colors focus-visible:border-solid focus-visible:border-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600/20 dark:bg-neutral-900 ${
+          open
+            ? "border-solid border-indigo-600 dark:border-indigo-400"
+            : "border-dashed border-gray-300 hover:border-gray-500 dark:border-neutral-700 dark:hover:border-neutral-500"
+        }`}
+      >
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-neutral-300">
+          <IconPlus className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-45" : ""}`} />
+        </span>
+        <span className="flex-1 text-sm font-medium text-gray-800 dark:text-neutral-200">{label}</span>
+        <span className="hidden text-xs text-gray-400 dark:text-neutral-500 sm:inline">{hint}</span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-3">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function StepExtras({
   form,
   set,
@@ -1314,183 +1438,158 @@ function StepExtras({
   removeDocument: (id: string) => void;
   fileError: string | null;
 }) {
+  const [showDocs, setShowDocs] = useState(documents.length > 0);
+
   return (
     <>
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">
+      <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white md:text-[28px] md:leading-tight">
         Almost done — just a few more things
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-neutral-400">
+      <p className="mt-2 text-base leading-relaxed text-gray-500 dark:text-neutral-400">
         These are all optional, but help us hit the ground running.
       </p>
 
-      <div className="mt-8 space-y-8">
-        {/* Specific grant toggle */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowGrantSection(!showGrantSection)}
-            className="flex w-full items-center gap-2 rounded-xl border border-dashed border-gray-300 bg-white px-5 py-4 text-left transition-colors hover:border-gray-400 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-neutral-600 dark:hover:bg-neutral-800/50"
-          >
-            <IconChevronDown
-              className={`h-4 w-4 shrink-0 text-gray-400 transition-transform dark:text-neutral-500 ${
-                showGrantSection ? "rotate-180" : ""
-              }`}
-            />
-            <div className="flex-1">
-              <span className="text-sm font-medium text-gray-700 dark:text-neutral-300">
-                Have a specific grant in mind?
-              </span>
-              <span className="ml-2 text-xs text-gray-400 dark:text-neutral-500">
-                Optional
-              </span>
-            </div>
-          </button>
+      <div className="mt-8 space-y-3">
+        <AddSection
+          label="Add supporting documents"
+          hint="990, budget, IRS letter…"
+          open={showDocs}
+          onToggle={() => setShowDocs((v) => !v)}
+        >
+            <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <p className="text-xs text-gray-500 dark:text-neutral-400">
+                IRS letter, 990, budget, annual report, grant guidelines, or existing proposals.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex-1">
+                  <select value={docCategory} onChange={(e) => setDocCategory(e.target.value)} className={selectClsErr()}>
+                    <option value="" disabled>Select type…</option>
+                    {DOCUMENT_CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                >
+                  <IconUpload className="h-4 w-4" />
+                  Upload
+                </button>
+                <input ref={fileInputRef} type="file" accept={ACCEPTED_EXTENSIONS} multiple onChange={handleFileUpload} className="hidden" />
+              </div>
 
-          <AnimatePresence>
-            {showGrantSection && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3 space-y-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Funder Name">
-                      <input type="text" value={form.grantFunderName} onChange={set("grantFunderName")} placeholder="Robert Wood Johnson Foundation" className={inputClsErr()} />
-                    </Field>
-                    <Field label="Grant Name">
-                      <input type="text" value={form.grantName} onChange={set("grantName")} placeholder="Culture of Health Prize" className={inputClsErr()} />
-                    </Field>
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Deadline">
-                      <input type="date" value={form.grantDeadline} onChange={set("grantDeadline")} className={inputClsErr()} />
-                    </Field>
-                    <Field label="Funding Amount">
-                      <input type="text" value={form.grantFundingAmount} onChange={set("grantFundingAmount")} placeholder="$50,000" className={inputClsErr()} />
-                    </Field>
-                  </div>
-                  <Field label="Grant URL">
-                    <input type="url" value={form.grantUrl} onChange={set("grantUrl")} placeholder="https://rwjf.org/grants" className={inputClsErr()} />
-                  </Field>
-                  {/* RFP Upload */}
-                  <div>
-                    <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
-                      Upload RFP / Guidelines
-                    </span>
-                    {grantRfpFile ? (
-                      <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-800">
+              {fileError && (
+                <div className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
+                  <IconAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  {fileError}
+                </div>
+              )}
+
+              {documents.length > 0 ? (
+                <div className="space-y-2">
+                  {documents.map((doc) => {
+                    const cat = DOCUMENT_CATEGORIES.find((c) => c.value === doc.category);
+                    return (
+                      <div key={doc.id} className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50">
                         <IconFile className="h-4 w-4 shrink-0 text-indigo-500" />
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm text-gray-800 dark:text-neutral-200">{grantRfpFile.name}</div>
-                          <div className="text-xs text-gray-400 dark:text-neutral-500">{formatFileSize(grantRfpFile.size)}</div>
+                          <div className="truncate text-sm font-medium text-gray-800 dark:text-neutral-200">{doc.name}</div>
+                          <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500">
+                            <span>{formatFileSize(doc.size)}</span>
+                            <span>·</span>
+                            <span>{cat?.label || doc.category}</span>
+                          </div>
                         </div>
-                        <button type="button" onClick={() => setGrantRfpFile(null)} className="shrink-0 rounded p-1 text-gray-400 transition-colors hover:text-red-500 dark:text-neutral-500">
+                        <button type="button" onClick={() => removeDocument(doc.id)} className="shrink-0 rounded p-1 text-gray-400 transition-colors hover:text-red-500 dark:text-neutral-500">
                           <IconX className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => rfpInputRef.current?.click()}
-                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-500 transition-colors hover:border-gray-400 hover:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600"
-                      >
-                        <IconUpload className="h-4 w-4" />
-                        Choose file
-                      </button>
-                    )}
-                    <input ref={rfpInputRef} type="file" accept={ACCEPTED_EXTENSIONS} onChange={handleRfpUpload} className="hidden" />
+                    );
+                  })}
+                  <div className="text-xs text-gray-400 dark:text-neutral-500">
+                    {documents.length} file{documents.length !== 1 ? "s" : ""} · {formatFileSize(getTotalUploadSize(documents))} total
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Documents */}
-        <div>
-          <h2 className="mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-            Supporting Documents
-          </h2>
-          <p className="mb-4 text-xs text-gray-400 dark:text-neutral-500">
-            IRS letter, 990, budget, annual report, grant guidelines, or existing proposals.
-          </p>
-
-          <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="flex-1">
-                <select value={docCategory} onChange={(e) => setDocCategory(e.target.value)} className={selectClsErr()}>
-                  <option value="" disabled>Select type…</option>
-                  {DOCUMENT_CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
-              </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-              >
-                <IconUpload className="h-4 w-4" />
-                Upload
-              </button>
-              <input ref={fileInputRef} type="file" accept={ACCEPTED_EXTENSIONS} multiple onChange={handleFileUpload} className="hidden" />
-            </div>
-
-            {fileError && (
-              <div className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
-                <IconAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                {fileError}
-              </div>
-            )}
-
-            {documents.length > 0 ? (
-              <div className="space-y-2">
-                {documents.map((doc) => {
-                  const cat = DOCUMENT_CATEGORIES.find((c) => c.value === doc.category);
-                  return (
-                    <div key={doc.id} className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50">
-                      <IconFile className="h-4 w-4 shrink-0 text-indigo-500" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-gray-800 dark:text-neutral-200">{doc.name}</div>
-                        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-500">
-                          <span>{formatFileSize(doc.size)}</span>
-                          <span>·</span>
-                          <span>{cat?.label || doc.category}</span>
-                        </div>
-                      </div>
-                      <button type="button" onClick={() => removeDocument(doc.id)} className="shrink-0 rounded p-1 text-gray-400 transition-colors hover:text-red-500 dark:text-neutral-500">
-                        <IconX className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  );
-                })}
-                <div className="text-xs text-gray-400 dark:text-neutral-500">
-                  {documents.length} file{documents.length !== 1 ? "s" : ""} · {formatFileSize(getTotalUploadSize(documents))} total
+              ) : (
+                <div className="rounded-lg border border-dashed border-gray-200 bg-white px-4 py-5 text-center dark:border-neutral-700 dark:bg-neutral-800/30">
+                  <IconUpload className="mx-auto mb-1.5 h-5 w-5 text-gray-300 dark:text-neutral-600" />
+                  <p className="text-xs text-gray-400 dark:text-neutral-500">
+                    PDF, DOC, DOCX, PNG, or JPG · 2 MB max per file
+                  </p>
                 </div>
-              </div>
-            ) : (
-              <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/50 px-4 py-5 text-center dark:border-neutral-700 dark:bg-neutral-800/30">
-                <IconUpload className="mx-auto mb-1.5 h-5 w-5 text-gray-300 dark:text-neutral-600" />
-                <p className="text-xs text-gray-400 dark:text-neutral-500">
-                  PDF, DOC, DOCX, PNG, or JPG · 2 MB max per file
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </div>
+        </AddSection>
 
-        {/* Referral */}
-        <Field label="How did you hear about us?">
-          <select value={form.referralSource} onChange={set("referralSource")} className={selectClsErr()}>
-            <option value="">Select one</option>
-            {REFERRAL_OPTIONS.map((r) => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
-        </Field>
+        <AddSection
+          label="Add a grant you're targeting"
+          hint="Funder, deadline, RFP"
+          open={showGrantSection}
+          onToggle={() => setShowGrantSection(!showGrantSection)}
+        >
+            <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Funder Name">
+                  <input type="text" value={form.grantFunderName} onChange={set("grantFunderName")} placeholder="Robert Wood Johnson Foundation" className={inputClsErr()} />
+                </Field>
+                <Field label="Grant Name">
+                  <input type="text" value={form.grantName} onChange={set("grantName")} placeholder="Culture of Health Prize" className={inputClsErr()} />
+                </Field>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Deadline">
+                  <input type="date" value={form.grantDeadline} onChange={set("grantDeadline")} className={inputClsErr()} />
+                </Field>
+                <Field label="Funding Amount">
+                  <input type="text" value={form.grantFundingAmount} onChange={set("grantFundingAmount")} placeholder="$50,000" className={inputClsErr()} />
+                </Field>
+              </div>
+              <Field label="Grant URL">
+                <input type="url" value={form.grantUrl} onChange={set("grantUrl")} placeholder="https://rwjf.org/grants" className={inputClsErr()} />
+              </Field>
+              {/* RFP Upload */}
+              <div>
+                <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
+                  Upload RFP / Guidelines
+                </span>
+                {grantRfpFile ? (
+                  <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 dark:border-neutral-700 dark:bg-neutral-800">
+                    <IconFile className="h-4 w-4 shrink-0 text-indigo-500" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm text-gray-800 dark:text-neutral-200">{grantRfpFile.name}</div>
+                      <div className="text-xs text-gray-400 dark:text-neutral-500">{formatFileSize(grantRfpFile.size)}</div>
+                    </div>
+                    <button type="button" onClick={() => setGrantRfpFile(null)} className="shrink-0 rounded p-1 text-gray-400 transition-colors hover:text-red-500 dark:text-neutral-500">
+                      <IconX className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => rfpInputRef.current?.click()}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-white px-4 py-3 text-sm text-gray-500 transition-colors hover:border-gray-400 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600"
+                  >
+                    <IconUpload className="h-4 w-4" />
+                    Choose file
+                  </button>
+                )}
+                <input ref={rfpInputRef} type="file" accept={ACCEPTED_EXTENSIONS} onChange={handleRfpUpload} className="hidden" />
+              </div>
+            </div>
+        </AddSection>
+
+        <div className="pt-5">
+          <Field label="How did you hear about us?">
+            <select value={form.referralSource} onChange={set("referralSource")} className={selectClsErr()}>
+              <option value="">Select one</option>
+              {REFERRAL_OPTIONS.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
       </div>
     </>
   );

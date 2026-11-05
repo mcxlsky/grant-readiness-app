@@ -84,7 +84,7 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
             Applications
           </h1>
           {newCount > 0 && (
@@ -100,7 +100,7 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
 
       {/* Application list */}
       {applications.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
           <IconCircleDot className="mx-auto mb-3 h-8 w-8 text-gray-300 dark:text-neutral-600" />
           <p className="text-sm text-gray-500 dark:text-neutral-500">
             No applications yet. Share the application link with organizations.
@@ -118,7 +118,7 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
                 key={app.id}
                 layout
                 onClick={() => handleOpen(app)}
-                className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+                className="cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
               >
                 <div className="min-w-0">
                   <div className="flex items-start justify-between gap-2">
@@ -210,7 +210,7 @@ This link will walk you through a few quick steps so we can begin assessing your
 If you have any questions in the meantime, feel free to reply to this email.
 
 Best regards,
-Ready Set Grants Team`;
+Rev & Ready Team`;
 }
 
 function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps) {
@@ -263,7 +263,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
 
       <div className="mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
             {app.orgName}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-neutral-500">
@@ -346,7 +346,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
 
       {/* Email preview */}
       {showEmailPreview && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900">
           <div className="border-b border-gray-100 px-5 py-3 dark:border-neutral-800">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
               Email Preview
@@ -362,7 +362,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
             <div className="flex items-center gap-2 text-xs">
               <span className="font-medium text-gray-500 dark:text-neutral-500">Subject:</span>
               <span className="text-gray-800 dark:text-neutral-200">
-                Welcome to Ready Set Grants - {app.orgName}
+                Welcome to Rev &amp; Ready - {app.orgName}
               </span>
             </div>
           </div>
@@ -371,7 +371,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
               value={emailBody}
               onChange={(e) => setEmailBody(e.target.value)}
               rows={10}
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-relaxed text-gray-700 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm leading-relaxed text-gray-700 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
             />
           </div>
           <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-5 py-3 dark:border-neutral-800">
@@ -395,7 +395,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
       <div className="space-y-4">
         {/* Services requested */}
         {app.supportTypes && app.supportTypes.length > 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
               Services Requested
             </h2>
@@ -413,7 +413,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         )}
 
         {/* Contact card */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Primary Contact
           </h2>
@@ -458,7 +458,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         </div>
 
         {/* Organization info */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Organization
           </h2>
@@ -533,7 +533,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         </div>
 
         {/* Project details */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Project: {app.projectTitle}
           </h2>
@@ -575,7 +575,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
 
         {/* Specific grant */}
         {(app.grantFunderName || app.grantName) && (
-          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
               Specific Grant
             </h2>
@@ -628,7 +628,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         <DocumentsCard appId={app.id} />
 
         {/* Consultant notes */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Consultant Notes
           </h2>
@@ -637,7 +637,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add internal notes about this application..."
             rows={4}
-            className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-500"
           />
           {notes !== app.notes && (
             <div className="mt-2 flex justify-end">
@@ -707,7 +707,7 @@ function DocumentsCard({ appId }: { appId: string }) {
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
       <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
         Documents ({docs.length})
       </h2>

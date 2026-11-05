@@ -75,7 +75,7 @@ export function PaywallModal({ open, onClose, onConfirm, orgName, score }: Paywa
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: "spring", duration: 0.4, bounce: 0.15 }}
-            className="fixed inset-x-4 top-[5%] z-[101] mx-auto max-h-[90vh] max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900 sm:inset-x-auto"
+            className="fixed inset-x-4 top-[5%] z-[101] mx-auto max-h-[90vh] max-w-lg overflow-y-auto rounded-2xl border border-gray-200/70 bg-gray-50 shadow-2xl dark:border-neutral-700 dark:bg-neutral-900 sm:inset-x-auto"
           >
             {/* Close button */}
             <button
@@ -91,7 +91,7 @@ export function PaywallModal({ open, onClose, onConfirm, orgName, score }: Paywa
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10">
                   <IconCircleCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
                   {orgName} is Grant-Ready
                 </h2>
                 <p className="mt-1 text-sm text-gray-500 dark:text-neutral-500">

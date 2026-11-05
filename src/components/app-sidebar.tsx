@@ -188,7 +188,7 @@ export function MobileTabBar({
   counts: Record<View, number | undefined>;
 }) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-gray-200 bg-white/95 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/95 md:hidden">
       {MOBILE_ITEMS.map((item) => {
         const Icon = item.icon;
         const active = view === item.key;
