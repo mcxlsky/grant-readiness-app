@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { consultantOnly } from "@/lib/auth/consultant-route";
 
 const BASE = "https://projects.propublica.org/nonprofits/api/v2";
 const HEADERS = {
   "User-Agent": "GrantReadinessPrototype/0.1 (research/demo use)",
 };
 
-export async function GET(request: NextRequest) {
+export const GET = consultantOnly(async (request: NextRequest) => {
   const params = request.nextUrl.searchParams;
   const q = (params.get("q") || "").trim();
   const state = (params.get("state") || "").trim().toUpperCase();
@@ -34,4 +35,4 @@ export async function GET(request: NextRequest) {
       { status: 502 }
     );
   }
-}
+});
