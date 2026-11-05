@@ -478,8 +478,8 @@ function PortalContent() {
                           "shrink-0 rounded-xl border px-4 py-3 text-left transition-all",
                           allApps.length === 1 ? "flex-1" : "min-w-[240px] max-w-[300px]",
                           selected
-                            ? "border-indigo-300 bg-gray-50 shadow-sm ring-1 ring-indigo-200 dark:border-indigo-500/40 dark:bg-neutral-900 dark:ring-indigo-500/20"
-                            : "border-transparent bg-white/60 hover:border-gray-200 hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/40 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
+                            ? "border-indigo-600 bg-white dark:border-indigo-400 dark:bg-neutral-900"
+                            : "border-transparent bg-white hover:border-gray-200 dark:border-neutral-800 dark:bg-neutral-900/40 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
                         )}
                       >
                         <div className={cn(
@@ -497,7 +497,7 @@ function PortalContent() {
                   {/* Add program card */}
                   <Link
                     href={`/get-started?email=${encodeURIComponent(app.contactEmail)}`}
-                    className="flex shrink-0 w-[120px] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-4 py-3 text-gray-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600 dark:border-neutral-700 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/5 dark:hover:text-indigo-400"
+                    className="flex shrink-0 w-[120px] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 bg-white px-4 py-3 text-gray-400 transition-colors hover:border-indigo-300 hover:text-indigo-600 dark:border-neutral-700 dark:bg-transparent dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/5 dark:hover:text-indigo-400"
                   >
                     <IconPlus className="h-4 w-4" />
                     <span className="text-[10px] font-medium">Add Program</span>
@@ -595,7 +595,7 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
   return (
     <>
       {!inPipeline ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
           <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
           <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
             Not yet in the pipeline
@@ -734,7 +734,7 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                 })}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+            <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
               <IconTargetArrow className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
               <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
                 No grants yet
@@ -1063,7 +1063,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
           </div>
         </div>
       ) : uploadedDocs.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
           <IconFolder className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
           <p className="text-sm text-gray-400 dark:text-neutral-500">
             No additional documents required at this stage.
@@ -1086,7 +1086,7 @@ function MessagesPanel() {
         Communication from the Rev &amp; Ready team.
       </p>
 
-      <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-10 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
+      <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center dark:border-neutral-700 dark:bg-neutral-900/30">
         <IconMessageCircle className="mx-auto mb-2 h-6 w-6 text-gray-300 dark:text-neutral-600" />
         <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
           No messages yet
