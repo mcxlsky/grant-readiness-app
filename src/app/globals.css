@@ -8,6 +8,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Brand focus ring instead of the browser's default accent color. */
+:focus-visible {
+  outline: 2px solid theme("colors.indigo.600");
+  outline-offset: 2px;
+}
+
 /* The landing page's fade stack settles on whole sections. */
 html:has([data-snap-point]) {
   scroll-snap-type: y mandatory;

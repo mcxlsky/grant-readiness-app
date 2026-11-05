@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { getAdminSession, type AdminSession } from "@/lib/admin-session";
 import { AppSidebar, MobileTabBar } from "@/components/app-sidebar";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { SearchModal } from "@/components/search-modal";
@@ -31,8 +33,21 @@ import { cn } from "@/lib/utils";
 export type View = "orgs" | "grants" | "pipeline";
 export type InboxFilter = "all" | "ready" | "needs_work";
 
-export default function Home() {
-  const [adminName, setAdminName] = useState("Admin");
+export default function DashboardPage() {
+  const router = useRouter();
+  const [session, setSession] = useState<AdminSession | null>(null);
+
+  useEffect(() => {
+    const current = getAdminSession();
+    if (current) setSession(current);
+    else router.replace("/admin");
+  }, [router]);
+
+  if (!session) return null;
+  return <AdminDashboard adminName={session.name} />;
+}
+
+function AdminDashboard({ adminName }: { adminName: string }) {
   const [portfolio, setPortfolio] = useState<PortfolioOrg[]>([]);
   const [applications, setApplications] = useState<GrantApplication[]>([]);
   const [activeEin, setActiveEin] = useState<number | null>(null);
@@ -88,15 +103,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Read admin name if set
-    try {
-      const admin = localStorage.getItem("rsg_admin");
-      if (admin) {
-        const parsed = JSON.parse(admin);
-        if (parsed.name) setAdminName(parsed.name);
-      }
-    } catch { /* use default */ }
-
     let p = loadPortfolio();
     let a = loadApplications();
     if (p.length === 0 && !localStorage.getItem("rsg_seeded")) {
@@ -385,7 +391,7 @@ export default function Home() {
             <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
               {activeOrg.name}
             </h1>
-            <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="mt-8 rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
               <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-indigo-500 dark:border-neutral-700 dark:border-t-indigo-400" />
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                 Running Readiness Assessment
@@ -469,7 +475,7 @@ export default function Home() {
       {/* Full-width top nav */}
       <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-transparent bg-gray-50/85 backdrop-blur-md px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
         <a
-          href="/?choose=1"
+          href="/dashboard"
           className="flex cursor-pointer items-center gap-2"
         >
           <span aria-hidden="true" className="block h-7 w-7 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
@@ -508,12 +514,17 @@ export default function Home() {
             {renderMainContent()}
           </div>
           <footer className="mx-auto w-full max-w-[840px] px-6 pb-6 md:px-10">
-            <p className="pt-4 text-[11px] leading-relaxed text-gray-400 dark:text-neutral-500">
-            Financial and filing data sourced live from the ProPublica Nonprofit
-            Explorer API (IRS Form 990 data). Website housekeeping signals come
-            from a live scan of the org&apos;s own site. Grant data sourced from
-            Grants.gov, Foundation Directory Online, and Corporate Giving
-            Database. This is a working prototype, not a finished product.
+            <p className="pt-4 text-xs text-gray-400 dark:text-neutral-500">
+              Nonprofit financial data from{" "}
+              <a
+                href="https://projects.propublica.org/nonprofits/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-gray-300 underline-offset-2 transition-colors hover:text-gray-600 dark:decoration-neutral-600 dark:hover:text-neutral-300"
+              >
+                ProPublica&apos;s Nonprofit Explorer
+              </a>
+              .
             </p>
           </footer>
         </main>

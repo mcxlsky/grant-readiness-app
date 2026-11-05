@@ -300,7 +300,7 @@ export function WelcomeView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 dark:border-neutral-700 dark:bg-neutral-900"
+              className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 dark:border-neutral-700 dark:bg-neutral-900"
             >
               <IconSearch className="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-neutral-500" />
               <input
@@ -371,7 +371,7 @@ export function WelcomeView({
             : "No organizations in this category"}
         </div>
       ) : (
-        <div className="-mx-4 dark:bg-neutral-900">
+        <div className="-mx-4 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
           {filtered.map((org, i) => {
             const isAssessing = assessingEins.has(org.ein);
             const app = appByEin.get(org.ein);
@@ -395,8 +395,8 @@ export function WelcomeView({
                   }
                 }}
                 className={`
-                  flex cursor-pointer items-center gap-3 px-4 py-3.5 outline-none focus-visible:bg-gray-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/40
-                  transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800/60
+                  flex cursor-pointer items-center gap-3 px-4 py-3.5 outline-none focus-visible:bg-gray-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/40
+                  transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/60
                   ${i > 0 ? "border-t border-gray-200 dark:border-neutral-800/60" : ""}
                   ${isUnread ? "dark:bg-neutral-900" : "dark:bg-neutral-900/60"}
                 `}

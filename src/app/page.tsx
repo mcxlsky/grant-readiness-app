@@ -261,12 +261,8 @@ export default function LandingPage() {
     router.push("/get-started");
   };
 
-  const handleAdmin = () => {
-    localStorage.setItem(
-      "rsg_admin",
-      JSON.stringify({ name: "Admin", signedInAt: Date.now() }),
-    );
-    router.push("/dashboard");
+  const handleExistingApp = () => {
+    router.push("/portal");
   };
 
   if (!ready) return null;
@@ -316,7 +312,7 @@ export default function LandingPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={handleAdmin}
+                      onClick={handleExistingApp}
                       className="py-2 text-sm font-semibold text-plum-400 transition-colors hover:text-plum-600 md:text-base"
                     >
                       Continue with an existing app{" "}

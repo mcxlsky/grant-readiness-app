@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { IconUser, IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import type { Theme } from "@/lib/theme";
+import { signOutAdmin } from "@/lib/admin-session";
 
 interface ProfileDropdownProps {
   theme: Theme;
@@ -28,11 +29,8 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin" }: P
   }, [open]);
 
   const handleSignOut = () => {
-    localStorage.setItem(
-      "rsg_admin",
-      JSON.stringify({ signedOut: true })
-    );
-    router.push("/");
+    signOutAdmin();
+    router.push("/admin");
   };
 
   return (

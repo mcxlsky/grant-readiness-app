@@ -304,7 +304,7 @@ function ModalGrantCard({
 
   return (
     <div className={cn(
-      "rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors dark:border-neutral-800 dark:bg-neutral-900",
+      "rounded-xl border border-gray-200 bg-white p-4 transition-colors dark:border-neutral-800 dark:bg-neutral-900",
       already && "opacity-50"
     )}>
       {/* Header */}
@@ -441,7 +441,7 @@ function PitchedGrantRow({
   const isTerminal = grant.status === "awarded" || grant.status === "declined";
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="rounded-lg border border-gray-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
       {/* Header: funder name + status label (hidden when obvious from context) */}
       <div className="flex items-start justify-between gap-1.5">
         <span className="min-w-0 truncate text-xs font-semibold text-gray-800 dark:text-neutral-200">
@@ -973,7 +973,7 @@ export function PipelineView({
                 return (
                   <div
                     key={org.ein}
-                    className="rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-neutral-800 dark:bg-neutral-900"
+                    className="rounded-xl border border-gray-200 bg-white transition-colors dark:border-neutral-800 dark:bg-neutral-900"
                   >
                     {/* Org header */}
                     <div className="flex w-full items-center gap-3 p-4">

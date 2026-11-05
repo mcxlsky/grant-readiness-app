@@ -255,7 +255,7 @@ function PortalContent() {
   };
 
   const handleSignOut = () => {
-    router.push("/?choose=1");
+    router.push("/");
   };
 
   if (loading) return null;
@@ -281,7 +281,7 @@ function PortalContent() {
           </div>
 
           {notFound ? (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
               <IconCircleDot className="mx-auto mb-3 h-8 w-8 text-gray-300 dark:text-neutral-600" />
               <p className="text-sm font-medium text-gray-700 dark:text-neutral-300">
                 Application not found
@@ -358,7 +358,7 @@ function PortalContent() {
     <div className="flex h-screen w-full flex-col overflow-hidden bg-gray-50 dark:bg-neutral-950">
       {/* Top nav */}
       <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-transparent bg-gray-50/85 backdrop-blur-md px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
-        <a href="/?choose=1" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2">
           <span aria-hidden="true" className="block h-7 w-7 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
           <span aria-hidden="true" className="block aspect-[473/319] w-12 shrink-0 bg-plum-900 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
           <span className="sr-only">Rev &amp; Ready</span>
@@ -654,7 +654,7 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                   return (
                     <div
                       key={g.id}
-                      className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900"
+                      className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
@@ -822,7 +822,7 @@ function OrgPanel({ app, org, onUnlock }: { app: GrantApplication; org: Portfoli
           { label: "Digital Presence", score: readiness.digital.score },
         ];
         return (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center gap-5">
               <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
                 <svg className="h-20 w-20 -rotate-90" viewBox="0 0 72 72">
@@ -887,13 +887,13 @@ function OrgPanel({ app, org, onUnlock }: { app: GrantApplication; org: Portfoli
 
       {/* Action items */}
       {actionItems.length > 0 && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
             Action Items
           </h3>
           <div className="space-y-2">
             {actionItems.map((item, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/50">
+              <div key={i} className="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-800/50">
                 <div className={`mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 ${
                   item.priority === "high"
                     ? "border-red-400 dark:border-red-500"
@@ -977,7 +977,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
       </p>
 
       {/* Intake form (always present) */}
-      <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
           Submitted
         </h3>
@@ -997,7 +997,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
 
       {/* Uploaded documents */}
       {uploadedDocs.length > 0 && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
             Uploaded Documents
           </h3>
@@ -1007,7 +1007,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
               return (
                 <div
                   key={doc.id}
-                  className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50"
+                  className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50"
                 >
                   <IconFileText className="h-4 w-4 shrink-0 text-indigo-500" />
                   <div className="min-w-0 flex-1">
@@ -1035,7 +1035,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
 
       {/* Required documents */}
       {requiredDocs.length > 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
             Required for Assessment
           </h3>
@@ -1205,7 +1205,7 @@ function ApplicantReviewModal({
         {/* Questions and answers */}
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
           {questions.map((q, i) => (
-            <div key={i} className="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/50">
+            <div key={i} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-800/50">
               <div className="mb-2 flex items-start gap-2 text-xs font-medium text-gray-700 dark:text-neutral-300">
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[9px] font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400">
                   {i + 1}
@@ -1302,7 +1302,7 @@ function HelpPanel() {
         {faqs.map((faq, i) => (
           <div
             key={i}
-            className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900"
+            className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
           >
             <div className="text-sm font-semibold text-gray-800 dark:text-neutral-200">
               {faq.q}
@@ -1315,7 +1315,7 @@ function HelpPanel() {
       </div>
 
       {/* Contact */}
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
           Contact Support
         </h3>

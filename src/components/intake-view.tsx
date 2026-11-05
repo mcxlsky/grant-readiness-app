@@ -71,7 +71,7 @@ export function IntakeView({ org, onAnalysisComplete, onBack }: IntakeViewProps)
       </div>
 
       {/* Analyze card */}
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-800 dark:bg-neutral-900">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10">
           <IconAnalyze className="h-6 w-6 text-indigo-500 dark:text-indigo-400" />
         </div>

@@ -100,7 +100,7 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
 
       {/* Application list */}
       {applications.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
           <IconCircleDot className="mx-auto mb-3 h-8 w-8 text-gray-300 dark:text-neutral-600" />
           <p className="text-sm text-gray-500 dark:text-neutral-500">
             No applications yet. Share the application link with organizations.
@@ -118,7 +118,7 @@ export function ApplicationsView({ applications, onRefresh, onAcceptOrg }: Appli
                 key={app.id}
                 layout
                 onClick={() => handleOpen(app)}
-                className="cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+                className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
               >
                 <div className="min-w-0">
                   <div className="flex items-start justify-between gap-2">
@@ -346,7 +346,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
 
       {/* Email preview */}
       {showEmailPreview && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
           <div className="border-b border-gray-100 px-5 py-3 dark:border-neutral-800">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
               Email Preview
@@ -395,7 +395,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
       <div className="space-y-4">
         {/* Services requested */}
         {app.supportTypes && app.supportTypes.length > 0 && (
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
               Services Requested
             </h2>
@@ -413,7 +413,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         )}
 
         {/* Contact card */}
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Primary Contact
           </h2>
@@ -458,7 +458,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         </div>
 
         {/* Organization info */}
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Organization
           </h2>
@@ -533,7 +533,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         </div>
 
         {/* Project details */}
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Project: {app.projectTitle}
           </h2>
@@ -575,7 +575,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
 
         {/* Specific grant */}
         {(app.grantFunderName || app.grantName) && (
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
               Specific Grant
             </h2>
@@ -628,7 +628,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
         <DocumentsCard appId={app.id} />
 
         {/* Consultant notes */}
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
             Consultant Notes
           </h2>
@@ -707,7 +707,7 @@ function DocumentsCard({ appId }: { appId: string }) {
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
       <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-500">
         Documents ({docs.length})
       </h2>
@@ -717,7 +717,7 @@ function DocumentsCard({ appId }: { appId: string }) {
           return (
             <div
               key={doc.id}
-              className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50"
+              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50"
             >
               <IconFileText className="h-4 w-4 shrink-0 text-indigo-500" />
               <div className="min-w-0 flex-1">

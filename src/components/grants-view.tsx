@@ -347,12 +347,13 @@ export function GrantsView({
         {(["All", "Federal", "Foundation", "Corporate"] as const).map((t) => (
           <button
             key={t}
+            aria-pressed={typeFilter === t}
             onClick={() => setTypeFilter(t)}
             className={cn(
               "rounded-full border px-2.5 py-1 transition-colors",
               typeFilter === t
-                ? "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-400"
-                : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300 hover:text-gray-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500 dark:hover:border-neutral-600 dark:hover:text-neutral-400"
+                ? "border-indigo-700 bg-indigo-700 font-medium text-white dark:border-indigo-400 dark:bg-indigo-500"
+                : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500 dark:hover:border-neutral-600 dark:hover:text-neutral-400"
             )}
           >
             {t}
@@ -423,7 +424,7 @@ function GrantDatabaseCard({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.02, duration: 0.2 }}
-      className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+      className="rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
     >
       {/* Top row */}
       <div className="flex items-start justify-between gap-3">
@@ -551,7 +552,7 @@ function GrantDatabaseCard({
         {listing.focus.map((f) => (
           <span
             key={f}
-            className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:bg-neutral-800 dark:text-neutral-400"
+            className="rounded-md bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
           >
             {f}
           </span>

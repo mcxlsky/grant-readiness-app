@@ -1492,7 +1492,7 @@ function StepExtras({
                   {documents.map((doc) => {
                     const cat = DOCUMENT_CATEGORIES.find((c) => c.value === doc.category);
                     return (
-                      <div key={doc.id} className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50">
+                      <div key={doc.id} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-800/50">
                         <IconFile className="h-4 w-4 shrink-0 text-indigo-500" />
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-sm font-medium text-gray-800 dark:text-neutral-200">{doc.name}</div>
