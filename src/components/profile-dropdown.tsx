@@ -3,20 +3,21 @@
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { IconUser, IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
 import type { Theme } from "@/lib/theme";
-import { signOutAdmin } from "@/lib/admin-session";
+import { signOutConsultant } from "@/lib/admin-session";
 
 interface ProfileDropdownProps {
   theme: Theme;
   onToggleTheme: () => void;
   adminName?: string;
+  adminEmail?: string;
 }
 
-export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin" }: ProfileDropdownProps) {
+export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin", adminEmail }: ProfileDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutFailed, setSignOutFailed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -28,9 +29,16 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin" }: P
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  const handleSignOut = () => {
-    signOutAdmin();
-    router.push("/admin");
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setSignOutFailed(false);
+    if (await signOutConsultant()) {
+      // A full load drops the dashboard from memory and goes back through the middleware.
+      window.location.assign("/admin");
+      return;
+    }
+    setSigningOut(false);
+    setSignOutFailed(true);
   };
 
   return (
@@ -61,8 +69,8 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin" }: P
               <div className="text-xs font-semibold text-gray-800 dark:text-neutral-200">
                 {adminName}
               </div>
-              <div className="text-[11px] text-gray-400 dark:text-neutral-500">
-                Grant Consultant
+              <div className="truncate text-[11px] text-gray-400 dark:text-neutral-500" title={adminEmail}>
+                {adminEmail ?? "Grant Consultant"}
               </div>
             </div>
             <div className="py-1">
@@ -81,15 +89,18 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin" }: P
                 {theme === "dark" ? "Light mode" : "Dark mode"}
               </button>
               <button
-                onClick={() => {
-                  setOpen(false);
-                  handleSignOut();
-                }}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-700/50"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60 dark:text-neutral-300 dark:hover:bg-neutral-700/50"
               >
                 <IconLogout className="h-3.5 w-3.5" />
-                Sign out
+                {signingOut ? "Signing out…" : "Sign out"}
               </button>
+              {signOutFailed && (
+                <p role="alert" className="px-3 pb-2 text-[11px] leading-snug text-red-700 dark:text-red-300">
+                  Couldn&apos;t sign out. Check your connection and try again.
+                </p>
+              )}
             </div>
           </motion.div>
         )}

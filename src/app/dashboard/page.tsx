@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getAdminSession, type AdminSession } from "@/lib/admin-session";
+import { getConsultantSession, onConsultantSignedOut, type Consultant } from "@/lib/admin-session";
+import { isDevAuthMode } from "@/lib/auth/config";
 import { AppSidebar, MobileTabBar } from "@/components/app-sidebar";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { SearchModal } from "@/components/search-modal";
@@ -35,19 +36,38 @@ export type InboxFilter = "all" | "ready" | "needs_work";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [session, setSession] = useState<AdminSession | null>(null);
+  const [consultant, setConsultant] = useState<Consultant | null>(null);
 
+  // The middleware already checked access, so this mainly loads the name and email.
   useEffect(() => {
-    const current = getAdminSession();
-    if (current) setSession(current);
-    else router.replace("/admin");
+    let active = true;
+    getConsultantSession().then((current) => {
+      if (!active) return;
+      if (current) setConsultant(current);
+      else router.replace("/admin?error=check_failed");
+    });
+    const unsubscribe = onConsultantSignedOut(() => window.location.assign("/admin"));
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [router]);
 
-  if (!session) return null;
-  return <AdminDashboard adminName={session.name} />;
+  if (!consultant) {
+    return (
+      <div role="status" className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-neutral-950">
+        <div
+          aria-hidden="true"
+          className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-indigo-500 dark:border-neutral-700 dark:border-t-indigo-400"
+        />
+        <span className="sr-only">Loading your dashboard</span>
+      </div>
+    );
+  }
+  return <AdminDashboard adminName={consultant.name} adminEmail={consultant.email} />;
 }
 
-function AdminDashboard({ adminName }: { adminName: string }) {
+function AdminDashboard({ adminName, adminEmail }: { adminName: string; adminEmail: string }) {
   const [portfolio, setPortfolio] = useState<PortfolioOrg[]>([]);
   const [applications, setApplications] = useState<GrantApplication[]>([]);
   const [activeEin, setActiveEin] = useState<number | null>(null);
@@ -472,17 +492,23 @@ function AdminDashboard({ adminName }: { adminName: string }) {
         "bg-gray-50 dark:bg-neutral-950"
       )}
     >
+      {isDevAuthMode && (
+        <p className="shrink-0 bg-amber-100 px-4 py-1.5 text-center text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          Dev mode: Supabase isn&apos;t configured, so sign-in is turned off.
+        </p>
+      )}
+
       {/* Full-width top nav */}
       <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-transparent bg-gray-50/85 backdrop-blur-md px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
         <a
           href="/dashboard"
           className="flex cursor-pointer items-center gap-2"
         >
-          <span aria-hidden="true" className="block h-7 w-7 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
-          <span aria-hidden="true" className="block aspect-[473/319] w-12 shrink-0 bg-plum-900 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+          <span aria-hidden="true" className="block h-7 w-7 shrink-0 bg-indigo-700 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+          <span aria-hidden="true" className="block aspect-[473/319] w-12 shrink-0 bg-indigo-700 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
           <span className="sr-only">Rev &amp; Ready</span>
         </a>
-        <ProfileDropdown theme={theme} onToggleTheme={toggleTheme} adminName={adminName} />
+        <ProfileDropdown theme={theme} onToggleTheme={toggleTheme} adminName={adminName} adminEmail={adminEmail} />
       </div>
 
       {/* Body: sidebar + content */}

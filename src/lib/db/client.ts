@@ -8,7 +8,10 @@ export const isSupabaseConfigured = Boolean(url && key);
 
 /** Supabase client — only initialized when env vars are present */
 export const supabase: SupabaseClient = isSupabaseConfigured
-  ? createClient(url, key)
+  ? // Anonymous data access. Sign-in lives in lib/auth, so this client keeps no session of its own.
+    createClient(url, key, {
+      auth: { storageKey: "rr-data", persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    })
   : (new Proxy({} as SupabaseClient, {
       get(_, prop) {
         if (prop === "from") return () => new Proxy({}, { get: () => () => Promise.resolve({ data: null, error: new Error("Supabase not configured") }) });
