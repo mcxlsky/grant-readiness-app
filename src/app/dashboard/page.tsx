@@ -472,10 +472,9 @@ export default function Home() {
           href="/?choose=1"
           className="flex cursor-pointer items-center gap-2"
         >
-          <span aria-hidden="true" className="block h-6 w-6 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">
-            Rev &amp; Ready
-          </span>
+          <span aria-hidden="true" className="block h-7 w-7 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+          <span aria-hidden="true" className="block aspect-[473/319] w-12 shrink-0 bg-plum-900 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+          <span className="sr-only">Rev &amp; Ready</span>
         </a>
         <ProfileDropdown theme={theme} onToggleTheme={toggleTheme} adminName={adminName} />
       </div>
