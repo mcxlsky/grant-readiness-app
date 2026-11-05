@@ -4,10 +4,17 @@ import { checkConsultant, type Consultant } from "./auth/consultant";
 
 export type { Consultant };
 
-const DEV_CONSULTANT: Consultant = { name: "Dev Consultant", email: "dev@localhost" };
+const DEV_CONSULTANT: Consultant = {
+  userId: "dev",
+  name: "Dev Consultant",
+  email: "dev@localhost",
+  role: "admin",
+  firmId: "dev",
+  firmName: "Dev Firm",
+};
 
 // createBrowserClient reuses a single instance in the browser. Only call this when auth is configured.
-const getClient = () => createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const getAuthClient = () => createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /** The signed-in consultant, or null if there is no session or the check fails. */
 export async function getConsultantSession(): Promise<Consultant | null> {
@@ -16,7 +23,7 @@ export async function getConsultantSession(): Promise<Consultant | null> {
   }
   if (!isAuthConfigured) return null;
 
-  const supabase = getClient();
+  const supabase = getAuthClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -34,7 +41,7 @@ export type MagicLinkResult = "sent" | "rate_limited" | "failed";
 
 /** Emails a sign-in link. Accounts are never created here; see docs/consultant-auth.md. */
 export async function requestMagicLink(email: string): Promise<MagicLinkResult> {
-  const { error } = await getClient().auth.signInWithOtp({
+  const { error } = await getAuthClient().auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: false,
@@ -54,7 +61,7 @@ export async function signOutConsultant(): Promise<boolean> {
   }
   if (!isAuthConfigured) return true;
 
-  const { error } = await getClient().auth.signOut();
+  const { error } = await getAuthClient().auth.signOut();
   return !error;
 }
 
@@ -64,7 +71,7 @@ export function onConsultantSignedOut(callback: () => void): () => void {
 
   const {
     data: { subscription },
-  } = getClient().auth.onAuthStateChange((event) => {
+  } = getAuthClient().auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") callback();
   });
   return () => subscription.unsubscribe();

@@ -2,18 +2,22 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { IconUser, IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
+import { IconUser, IconUsers, IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
 import type { Theme } from "@/lib/theme";
 import { signOutConsultant } from "@/lib/admin-session";
+import { ROLE_LABELS, type FirmRole } from "@/lib/auth/consultant";
 
 interface ProfileDropdownProps {
   theme: Theme;
   onToggleTheme: () => void;
   adminName?: string;
   adminEmail?: string;
+  firmName?: string;
+  role?: FirmRole;
 }
 
-export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin", adminEmail }: ProfileDropdownProps) {
+export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin", adminEmail, firmName, role }: ProfileDropdownProps) {
+  const subtitle = [firmName, role && ROLE_LABELS[role]].filter(Boolean).join(" · ") || "Grant Consultant";
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutFailed, setSignOutFailed] = useState(false);
@@ -52,7 +56,7 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin", adm
         </div>
         <div className="hidden text-left md:block">
           <div className="text-xs font-medium text-gray-800 dark:text-neutral-200">{adminName}</div>
-          <div className="text-[10px] leading-tight text-gray-400 dark:text-neutral-500">Grant Consultant</div>
+          <div className="max-w-40 truncate text-[10px] leading-tight text-gray-400 dark:text-neutral-500">{subtitle}</div>
         </div>
       </button>
 
@@ -74,6 +78,15 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin", adm
               </div>
             </div>
             <div className="py-1">
+              {role === "admin" && (
+                <a
+                  href="/dashboard/team"
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-700/50"
+                >
+                  <IconUsers className="h-3.5 w-3.5" />
+                  Team
+                </a>
+              )}
               <button
                 onClick={() => {
                   onToggleTheme();

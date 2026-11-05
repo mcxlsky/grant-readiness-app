@@ -64,10 +64,10 @@ export default function DashboardPage() {
       </div>
     );
   }
-  return <AdminDashboard adminName={consultant.name} adminEmail={consultant.email} />;
+  return <AdminDashboard consultant={consultant} />;
 }
 
-function AdminDashboard({ adminName, adminEmail }: { adminName: string; adminEmail: string }) {
+function AdminDashboard({ consultant }: { consultant: Consultant }) {
   const [portfolio, setPortfolio] = useState<PortfolioOrg[]>([]);
   const [applications, setApplications] = useState<GrantApplication[]>([]);
   const [activeEin, setActiveEin] = useState<number | null>(null);
@@ -508,7 +508,14 @@ function AdminDashboard({ adminName, adminEmail }: { adminName: string; adminEma
           <span aria-hidden="true" className="block aspect-[473/319] w-12 shrink-0 bg-indigo-700 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
           <span className="sr-only">Rev &amp; Ready</span>
         </a>
-        <ProfileDropdown theme={theme} onToggleTheme={toggleTheme} adminName={adminName} adminEmail={adminEmail} />
+        <ProfileDropdown
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          adminName={consultant.name}
+          adminEmail={consultant.email}
+          firmName={consultant.firmName}
+          role={consultant.role}
+        />
       </div>
 
       {/* Body: sidebar + content */}
