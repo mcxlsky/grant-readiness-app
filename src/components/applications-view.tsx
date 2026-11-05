@@ -174,7 +174,7 @@ function CopyableLink() {
   return (
     <button
       onClick={copy}
-      className="inline-flex items-center gap-1 font-mono text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400"
+      className="inline-flex items-center gap-1 font-mono text-indigo-800 transition-colors hover:text-indigo-900 dark:text-indigo-400"
     >
       /get-started
       {copied ? (
@@ -383,7 +383,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
             </button>
             <button
               onClick={handleSendAndAccept}
-              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2 text-xs font-medium text-white transition-colors hover:bg-indigo-500"
+              className="flex items-center gap-1.5 rounded-lg bg-indigo-800 px-5 py-2 text-xs font-medium text-white transition-colors hover:bg-indigo-900"
             >
               <IconMail className="h-3.5 w-3.5" />
               Send & Add to Orgs
@@ -438,7 +438,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
               <div className="mt-2 flex flex-wrap gap-3 text-xs">
                 <a
                   href={`mailto:${app.contactEmail}`}
-                  className="flex items-center gap-1 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                  className="flex items-center gap-1 text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                 >
                   <IconMail className="h-3 w-3" />
                   {app.contactEmail}
@@ -446,7 +446,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
                 {app.contactPhone && (
                   <a
                     href={`tel:${app.contactPhone}`}
-                    className="flex items-center gap-1 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                    className="flex items-center gap-1 text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                   >
                     <IconPhone className="h-3 w-3" />
                     {app.contactPhone}
@@ -483,7 +483,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
                     href={app.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                    className="flex items-center gap-1 font-medium text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                   >
                     {app.website.replace(/^https?:\/\//, "")}
                     <IconExternalLink className="h-3 w-3" />
@@ -612,7 +612,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
                       href={app.grantUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                      className="flex items-center gap-1 text-sm font-medium text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                     >
                       {app.grantUrl.replace(/^https?:\/\//, "")}
                       <IconExternalLink className="h-3 w-3" />
@@ -643,7 +643,7 @@ function ApplicationDetail({ app, onBack, onRefresh, onAcceptOrg }: DetailProps)
             <div className="mt-2 flex justify-end">
               <button
                 onClick={handleSaveNotes}
-                className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-500"
+                className="rounded-lg bg-indigo-800 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-900"
               >
                 Save Notes
               </button>
@@ -732,7 +732,7 @@ function DocumentsCard({ appId }: { appId: string }) {
               </div>
               <button
                 onClick={() => handleDownload(doc)}
-                className="shrink-0 rounded px-2 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                className="shrink-0 rounded px-2 py-1 text-xs font-medium text-indigo-800 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
               >
                 Download
               </button>

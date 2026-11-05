@@ -145,7 +145,7 @@ export function PaywallModal({ open, onClose, onConfirm, orgName, score }: Paywa
                   "flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-colors",
                   processing
                     ? "cursor-not-allowed bg-indigo-400 dark:bg-indigo-600"
-                    : "bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    : "bg-indigo-800 hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                 )}
               >
                 {processing ? (

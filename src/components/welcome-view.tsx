@@ -275,7 +275,7 @@ export function WelcomeView({
         </p>
         <button
           onClick={onOpenSearch}
-          className="mt-6 flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+          className="mt-6 flex items-center gap-2 rounded-lg bg-indigo-800 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-900"
         >
           <IconPlus className="h-4 w-4" />
           Add Organization
@@ -448,7 +448,7 @@ export function WelcomeView({
                     {onStartProspecting && (
                       <button
                         onClick={(e) => { e.stopPropagation(); onStartProspecting(org.ein); }}
-                        className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                        className="rounded-lg bg-indigo-800 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                       >
                         Accept
                       </button>

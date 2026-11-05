@@ -297,7 +297,7 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                   <button
                     type="submit"
                     disabled={!orgName.trim()}
-                    className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
+                    className="rounded-lg bg-indigo-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-900 disabled:opacity-50"
                   >
                     Add Organization
                   </button>
@@ -337,7 +337,7 @@ export function SearchModal({ open, onClose, onAdd, portfolio }: SearchModalProp
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full rounded-lg bg-indigo-600 py-2.5 text-base md:text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
+                      className="w-full rounded-lg bg-indigo-800 py-2.5 text-base md:text-sm font-medium text-white transition-colors hover:bg-indigo-900 disabled:opacity-50"
                     >
                       {loading ? <span className="spinner" /> : "Search"}
                     </button>

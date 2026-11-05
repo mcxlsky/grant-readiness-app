@@ -9,7 +9,7 @@ const inputCls =
   "w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand-sky-deep focus:ring-1 focus:ring-brand-sky/30 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white";
 
 const buttonCls =
-  "flex h-10 w-full items-center justify-center rounded-lg bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600";
+  "flex h-10 w-full items-center justify-center rounded-lg bg-indigo-800 text-sm font-semibold text-white transition-colors hover:bg-indigo-900 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600";
 
 const cardCls =
   "space-y-4 rounded-xl border border-gray-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900";
@@ -18,7 +18,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   not_authorized: "That email isn't on the consultant team. Ask a team admin to add you.",
   link_invalid: "That sign-in link has expired or was opened in a different browser. Request a new one.",
   check_failed: "We couldn't confirm your access. Request a new link, or try again in a few minutes.",
-  rate_limited: "Too many sign-in requests. Wait a minute, then try again.",
+  rate_limited: "Too many sign-in requests. Wait a few minutes, then try again.",
   failed: "We couldn't send the link. Check your connection and try again.",
 };
 
@@ -50,7 +50,7 @@ export default function AdminSignInPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-neutral-400">
           Looking for your application?{" "}
-          <Link href="/portal" className="font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+          <Link href="/portal" className="font-medium text-indigo-800 hover:text-indigo-900 dark:text-indigo-400">
             Go to the applicant portal
           </Link>
         </p>
@@ -95,7 +95,7 @@ function MagicLinkForm() {
         <button
           type="button"
           onClick={() => setSentTo(null)}
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+          className="text-sm font-medium text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
         >
           Use a different email
         </button>

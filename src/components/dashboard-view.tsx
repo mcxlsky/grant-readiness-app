@@ -173,7 +173,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
                   href={websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-0.5 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                  className="flex items-center gap-0.5 text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                 >
                   {websiteUrl.replace(/^https?:\/\/(www\.)?/, "")}
                   <IconExternalLink className="h-2.5 w-2.5" />
@@ -194,7 +194,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
         {canProspect ? (
           <button
             onClick={() => onStartProspecting?.(org.ein)}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-500"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-900"
           >
             Move to Prospecting
             <IconArrowRight className="h-3.5 w-3.5" />
@@ -368,7 +368,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
                       href={m.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      className="flex items-center gap-1 text-indigo-800 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                       {new URL(m.url).hostname}
                       <IconExternalLink className="h-3 w-3" />
@@ -431,7 +431,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
                     <div className="flex flex-wrap gap-3 text-xs">
                       <a
                         href={`mailto:${matchingApp.contactEmail}`}
-                        className="flex items-center gap-1 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                        className="flex items-center gap-1 text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                       >
                         <IconMail className="h-3 w-3" />
                         {matchingApp.contactEmail}
@@ -439,7 +439,7 @@ export function DashboardView({ org, backLabel, onBack, onStartProspecting }: Da
                       {matchingApp.contactPhone && (
                         <a
                           href={`tel:${matchingApp.contactPhone}`}
-                          className="flex items-center gap-1 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                          className="flex items-center gap-1 text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                         >
                           <IconPhone className="h-3 w-3" />
                           {matchingApp.contactPhone}

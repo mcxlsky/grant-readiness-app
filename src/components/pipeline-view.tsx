@@ -371,7 +371,7 @@ function ModalGrantCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="flex items-center gap-1 text-indigo-800 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
             >
               {(() => { try { return new URL(funderUrl).hostname; } catch { return funderUrl; } })()}
               <IconExternalLink className="h-3 w-3" />
@@ -390,7 +390,7 @@ function ModalGrantCard({
             "flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
             already
               ? "cursor-default text-green-600 dark:text-green-400"
-              : "bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+              : "bg-indigo-800 text-white hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           )}
         >
           {already ? (
@@ -558,7 +558,7 @@ function PitchedGrantRow({
                   updatePitchedGrantReviewStatus(ein, grant.id, "in_review");
                   onRefresh();
                 }}
-                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-[11px] font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-800 py-2 text-[11px] font-medium text-white shadow-sm transition-colors hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
               >
                 <IconSend className="h-3 w-3" /> Send for Review
               </button>
@@ -752,14 +752,14 @@ function DraftAnswersModal({
                 onRefresh();
                 onClose();
               }}
-              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+              className="flex items-center gap-1.5 rounded-lg bg-indigo-800 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
             >
               <IconSend className="h-3 w-3" /> Save & Resubmit
             </button>
           ) : (
             <button
               onClick={handleSave}
-              className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+              className="rounded-lg bg-indigo-800 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
             >
               Save Answers
             </button>
@@ -872,7 +872,7 @@ export function PipelineView({
                   className={cn(
                     "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                     isActive
-                      ? "bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white"
+                      ? "bg-indigo-800 text-white dark:bg-indigo-500 dark:text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
                   )}
                 >
@@ -997,8 +997,8 @@ export function PipelineView({
                           className={cn(
                             "flex shrink-0 items-center justify-center rounded-md font-medium text-white shadow-sm transition-colors",
                             orgNextAction.label === "→"
-                              ? "h-8 w-8 bg-indigo-600 text-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                              : "gap-1 bg-indigo-600 px-3 py-1.5 text-[11px] hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                              ? "h-8 w-8 bg-indigo-800 text-sm hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                              : "gap-1 bg-indigo-800 px-3 py-1.5 text-[11px] hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                           )}
                         >
                           {orgNextAction.label}
@@ -1031,7 +1031,7 @@ export function PipelineView({
                               </span>
                               <button
                                 onClick={() => handleAddFromMatch(org.ein, m)}
-                                className="flex shrink-0 items-center gap-0.5 rounded-md px-2 py-0.5 text-[10px] font-medium text-indigo-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                                className="flex shrink-0 items-center gap-0.5 rounded-md px-2 py-0.5 text-[10px] font-medium text-indigo-800 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
                               >
                                 <IconPlus className="h-2.5 w-2.5" />
                                 Add

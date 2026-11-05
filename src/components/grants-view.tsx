@@ -243,7 +243,7 @@ export function GrantsView({
                   className={cn(
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
                     sources.some((s) => !s.enabled)
-                      ? "text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                      ? "text-indigo-800 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
                       : "text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
                   )}
                   title="Sources"
@@ -352,7 +352,7 @@ export function GrantsView({
             className={cn(
               "rounded-full border px-2.5 py-1 transition-colors",
               typeFilter === t
-                ? "border-indigo-700 bg-indigo-700 font-medium text-white dark:border-indigo-400 dark:bg-indigo-500"
+                ? "border-indigo-800 bg-indigo-800 font-medium text-white dark:border-indigo-400 dark:bg-indigo-500"
                 : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500 dark:hover:border-neutral-600 dark:hover:text-neutral-400"
             )}
           >
@@ -566,7 +566,7 @@ function GrantDatabaseCard({
             href={funderUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="flex items-center gap-1 text-indigo-800 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             {new URL(funderUrl).hostname}
             <IconExternalLink className="h-3 w-3" />

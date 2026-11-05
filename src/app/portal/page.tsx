@@ -295,13 +295,13 @@ function PortalContent() {
                     setNotFound(false);
                     setShowLookup(true);
                   }}
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                  className="text-sm font-medium text-indigo-800 hover:text-indigo-900 dark:text-indigo-400"
                 >
                   Try a different email
                 </button>
                 <Link
                   href="/get-started"
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-900"
                 >
                   <IconFileText className="h-4 w-4" />
                   Start Your Assessment
@@ -329,7 +329,7 @@ function PortalContent() {
                   </div>
                   <button
                     type="submit"
-                    className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+                    className="flex items-center gap-2 rounded-lg bg-indigo-800 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-900"
                   >
                     Go
                   </button>
@@ -338,7 +338,7 @@ function PortalContent() {
               <div className="text-center">
                 <p className="text-xs text-gray-400 dark:text-neutral-600">
                   Don&apos;t have an application yet?{" "}
-                  <Link href="/get-started" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                  <Link href="/get-started" className="font-medium text-indigo-800 hover:text-indigo-900 dark:text-indigo-400">
                     Get started
                   </Link>
                 </p>
@@ -549,7 +549,7 @@ function PortalContent() {
                   href={`/get-started?email=${encodeURIComponent(app.contactEmail)}`}
                   className="flex flex-col items-center justify-center py-1.5"
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-800 text-white shadow-md transition-colors hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600">
                     <IconPlus className="h-5 w-5" />
                   </span>
                 </Link>
@@ -700,7 +700,7 @@ function ProgramsPanel({ app, org, onRefreshOrg }: { app: GrantApplication; org:
                       {g.reviewStatus === "in_review" && (
                         <button
                           onClick={() => setReviewingGrant(g)}
-                          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-800 py-2.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-indigo-900 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                         >
                           Review Draft Answers
                         </button>
@@ -1022,7 +1022,7 @@ function DocumentsPanel({ app }: { app: GrantApplication }) {
                   </div>
                   <button
                     onClick={() => handleDownload(doc)}
-                    className="shrink-0 rounded px-2 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                    className="shrink-0 rounded px-2 py-1 text-xs font-medium text-indigo-800 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
                   >
                     Download
                   </button>
@@ -1324,7 +1324,7 @@ function HelpPanel() {
         </p>
         <a
           href="mailto:support@readysetgrants.org"
-          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-900"
         >
           <IconMail className="h-4 w-4" />
           Email Support
