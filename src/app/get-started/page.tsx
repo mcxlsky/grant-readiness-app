@@ -515,7 +515,6 @@ function GetStartedContent() {
   const [step, setStep] = useState(0);
   const prefersReducedMotion = useReducedMotion();
   const progressPct = ((step + 1) / STEPS.length) * 100;
-  const progressLabel = `${step + 1} of ${STEPS.length} · ${STEPS[step].label}`;
   const progressTransition = { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeInOut" as const };
   const [direction, setDirection] = useState(1);
   const [showGrantSection, setShowGrantSection] = useState(false);
@@ -809,11 +808,11 @@ function GetStartedContent() {
           >
             <span
               aria-hidden="true"
-              className="block aspect-[90/88] w-8 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100 md:w-9"
+              className="block aspect-[90/88] w-8 bg-indigo-700 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100 md:w-9"
             />
             <span
               aria-hidden="true"
-              className="block aspect-[473/319] w-14 bg-plum-900 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100 md:w-16"
+              className="block aspect-[473/319] w-14 bg-indigo-700 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100 md:w-16"
             />
           </Link>
           <div
@@ -823,30 +822,14 @@ function GetStartedContent() {
             aria-valuemax={STEPS.length}
             aria-valuenow={step + 1}
             aria-valuetext={`Step ${step + 1} of ${STEPS.length}: ${STEPS[step].label}`}
-            className="relative h-7 w-52 overflow-hidden rounded-full border border-gray-300 bg-gray-200 dark:border-neutral-700 dark:bg-neutral-800"
+            className="h-1 w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-neutral-800"
           >
             <motion.div
-              className="absolute inset-y-0 left-0 rounded-full border border-indigo-700 bg-indigo-600 dark:border-indigo-400 dark:bg-indigo-500"
+              className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400"
               initial={false}
               animate={{ width: `${progressPct}%` }}
               transition={progressTransition}
             />
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-neutral-300"
-            >
-              {progressLabel}
-            </span>
-            {/* Same label in white, clipped to the filled part so it stays legible on black */}
-            <motion.span
-              aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white"
-              initial={false}
-              animate={{ clipPath: `inset(0 ${100 - progressPct}% 0 0 round 13px)` }}
-              transition={progressTransition}
-            >
-              {progressLabel}
-            </motion.span>
           </div>
         </div>
       </div>
@@ -1016,7 +999,7 @@ function StepServices({
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
                   selected
                     ? "border-indigo-600 bg-indigo-600 dark:border-indigo-400 dark:bg-indigo-500"
-                    : "border-gray-300 dark:border-neutral-600"
+                    : "border-gray-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
                 }`}
               >
                 {selected && <IconCheck className="h-3 w-3 text-white" />}

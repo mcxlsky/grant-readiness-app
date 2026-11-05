@@ -271,7 +271,7 @@ function PortalContent() {
           className="w-full max-w-md"
         >
           <div className="mb-10 flex flex-col items-center">
-            <span aria-hidden="true" className="block mb-3 h-10 w-10 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+            <span aria-hidden="true" className="block mb-3 h-10 w-10 bg-indigo-700 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
             <h1 className="text-2xl font-display font-medium tracking-tight text-gray-900 dark:text-white">
               Applicant Portal
             </h1>
@@ -359,8 +359,8 @@ function PortalContent() {
       {/* Top nav */}
       <div className="relative z-30 flex shrink-0 items-center justify-between border-b border-transparent bg-gray-50/85 backdrop-blur-md px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900 md:px-6">
         <a href="/" className="flex items-center gap-2">
-          <span aria-hidden="true" className="block h-7 w-7 shrink-0 bg-plum-900 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
-          <span aria-hidden="true" className="block aspect-[473/319] w-12 shrink-0 bg-plum-900 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+          <span aria-hidden="true" className="block h-7 w-7 shrink-0 bg-indigo-700 [mask:url('/brand/logo-mark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
+          <span aria-hidden="true" className="block aspect-[473/319] w-12 shrink-0 bg-indigo-700 [mask:url('/brand/wordmark.svg')_center/contain_no-repeat] dark:bg-plum-100" />
           <span className="sr-only">Rev &amp; Ready</span>
         </a>
         <div className="flex items-center gap-2.5">
