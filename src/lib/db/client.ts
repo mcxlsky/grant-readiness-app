@@ -1,20 +1,21 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, isAuthConfigured } from "../auth/config";
 
 /** True when Supabase env vars are configured */
-export const isSupabaseConfigured = Boolean(url && key);
+export const isSupabaseConfigured = isAuthConfigured;
 
-/** Supabase client — only initialized when env vars are present */
-export const supabase: SupabaseClient = isSupabaseConfigured
-  ? // Anonymous data access. Sign-in lives in lib/auth, so this client keeps no session of its own.
-    createClient(url, key, {
-      auth: { storageKey: "rr-data", persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    })
-  : (new Proxy({} as SupabaseClient, {
-      get(_, prop) {
-        if (prop === "from") return () => new Proxy({}, { get: () => () => Promise.resolve({ data: null, error: new Error("Supabase not configured") }) });
-        return () => Promise.resolve({ data: null, error: new Error("Supabase not configured") });
-      },
-    }) as SupabaseClient);
+/**
+ * Dashboard data client. It shares the consultant's session cookie with lib/auth, so
+ * queries run as the signed-in user and pass row level security. Queries only run in
+ * the browser; during pre-rendering there are no cookies to read, so this is a stub.
+ */
+export const supabase: SupabaseClient =
+  isSupabaseConfigured && typeof window !== "undefined"
+    ? createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : (new Proxy({} as SupabaseClient, {
+        get(_, prop) {
+          if (prop === "from") return () => new Proxy({}, { get: () => () => Promise.resolve({ data: null, error: new Error("Supabase not configured") }) });
+          return () => Promise.resolve({ data: null, error: new Error("Supabase not configured") });
+        },
+      }) as SupabaseClient);

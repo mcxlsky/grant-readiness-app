@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+import { consultantOnly } from "@/lib/auth/consultant-route";
 
 const PP_BASE = "https://projects.propublica.org/nonprofits/api/v2";
 const PP_HEADERS = {
@@ -510,7 +511,7 @@ function buildActionItems(grantMatches: any[], readiness: any, siteScan: any) {
 
 /* ── Handler ────────────────────────────────────────────── */
 
-export async function GET(request: NextRequest) {
+export const GET = consultantOnly(async (request: NextRequest) => {
   const params = request.nextUrl.searchParams;
   const ein = params.get("ein");
   const websiteUrl = (params.get("website") || "").trim();
@@ -534,4 +535,4 @@ export async function GET(request: NextRequest) {
       { status: 502 }
     );
   }
-}
+});

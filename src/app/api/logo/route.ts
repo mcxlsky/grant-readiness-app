@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { consultantOnly } from "@/lib/auth/consultant-route";
 
 /**
  * Proxy logo images for org avatars.
@@ -6,9 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
  *   1. Clearbit Logo API (high-res, but may not have all orgs)
  *   2. org's actual /favicon.ico or apple-touch-icon
  *   3. Google Favicons (reliable fallback)
- * Caches successful responses for 7 days.
+ * Caches successful responses for 7 days, in the browser only: a shared cache would
+ * answer without running the session check.
  */
-export async function GET(req: NextRequest) {
+export const GET = consultantOnly(async (req: NextRequest) => {
   const domain = req.nextUrl.searchParams.get("domain");
   if (!domain) {
     return NextResponse.json({ error: "domain param required" }, { status: 400 });
@@ -44,7 +46,7 @@ export async function GET(req: NextRequest) {
         status: 200,
         headers: {
           "Content-Type": contentType,
-          "Cache-Control": "public, max-age=604800, immutable",
+          "Cache-Control": "private, max-age=604800, immutable",
         },
       });
     } catch {
@@ -54,4 +56,4 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ error: "no logo found" }, { status: 404 });
-}
+});
