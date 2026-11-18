@@ -1,5 +1,6 @@
 -- ============================================================
--- Row level security test for 003_row_level_security.sql.
+-- Row level security test for 003_row_level_security.sql and 004_firms.sql.
+-- After 004, access comes from firm_members, not the consultants table.
 -- Run with psql against a fresh LOCAL Supabase stack (`supabase start`) that has
 -- the migrations applied and no other rows in the app tables. Everything runs in one transaction and rolls back.
 -- Fails with an error, naming each mismatch, if any access rule is wrong.
@@ -19,6 +20,14 @@ insert into consultants (email, name) values
   ('consultant@example.com', 'Test Consultant'),
   ('unconfirmed@example.com', 'Unconfirmed Consultant'),
   ('other@example.com', 'Other Consultant');
+
+-- Members, not admins: deleting a firm's last admin is blocked, and this test removes one below.
+-- The unconfirmed user is a member too, to show that membership alone isn't enough.
+insert into firms (id, name, slug) values
+  ('00000000-0000-4000-9000-000000000001', 'RLS Test Firm', 'rls-test-firm');
+insert into firm_members (firm_id, user_id, email, name, role) values
+  ('00000000-0000-4000-9000-000000000001', '00000000-0000-4000-a000-000000000001', 'consultant@example.com', 'Test Consultant', 'consultant'),
+  ('00000000-0000-4000-9000-000000000001', '00000000-0000-4000-a000-000000000003', 'unconfirmed@example.com', 'Unconfirmed Consultant', 'consultant');
 
 insert into organizations (id, ein, strein, name) values
   ('00000000-0000-4000-b000-000000000001', 999999991, '99-9999991', 'RLS Test Org');
@@ -130,6 +139,27 @@ select pg_temp.expect('anon', 'select * from consultants', 'denied');
 select pg_temp.expect('stranger', 'select * from consultants', 'ok:0');
 select pg_temp.expect('consultant', 'select * from consultants', 'ok:1');
 
+-- Firms: closed to anon and outsiders, visible to members, managed only by admins.
+-- Permission rules for admins themselves are tested in more depth elsewhere; these
+-- check the boundary from the outside and from an ordinary member.
+select pg_temp.expect('anon', 'select * from firms', 'denied');
+select pg_temp.expect('anon', 'select * from firm_members', 'denied');
+select pg_temp.expect('anon', 'select * from firm_invitations', 'denied');
+select pg_temp.expect('stranger', 'select * from firm_members', 'ok:0');
+select pg_temp.expect('stranger', 'select * from firms', 'ok:0');
+select pg_temp.expect('consultant', 'select * from firms', 'ok:1');
+select pg_temp.expect('consultant', 'select * from firm_members', 'ok:2');
+select pg_temp.expect('consultant', 'select * from firm_invitations', 'ok:0');
+select pg_temp.expect('consultant', $s$update firm_members set role = 'admin'$s$, 'ok:0');
+select pg_temp.expect('consultant', 'delete from firm_members', 'ok:0');
+select pg_temp.expect('consultant', $s$insert into firm_invitations (firm_id, email, name, role)
+  values ('00000000-0000-4000-9000-000000000001', 'new@example.com', 'New', 'admin')$s$, 'denied');
+select pg_temp.expect('stranger', $s$insert into firm_members (firm_id, user_id, email, name, role)
+  values ('00000000-0000-4000-9000-000000000001', '00000000-0000-4000-a000-000000000002', 'stranger@example.com', 'Me', 'admin')$s$, 'denied');
+select pg_temp.expect('stranger', 'select public.accept_firm_invitation()', 'ok:1');
+select pg_temp.expect('stranger', 'select 1 where public.is_firm_member(''00000000-0000-4000-9000-000000000001'')', 'ok:0');
+select pg_temp.expect('service_role', 'select * from firm_members', 'ok:2');
+
 -- is_consultant() can't be called by anon, and only answers for the caller.
 select pg_temp.expect('anon', 'select public.is_consultant()', 'denied');
 select pg_temp.expect('stranger', 'select 1 where public.is_consultant()', 'ok:0');
@@ -147,8 +177,8 @@ create table public.rls_test_future (id int primary key);
 select pg_temp.expect('anon', 'select * from rls_test_future', 'denied');
 select pg_temp.expect('stranger', 'select * from rls_test_future', 'denied');
 
--- Removing a consultant takes effect at once, even with a valid token.
-delete from consultants where email = 'consultant@example.com';
+-- Removing someone from their firm takes effect at once, even with a valid token.
+delete from firm_members where user_id = '00000000-0000-4000-a000-000000000001';
 select pg_temp.expect('consultant', 'select * from organizations', 'ok:0');
 select pg_temp.expect('consultant', $s$insert into organizations (ein, strein, name) values (999999993, 'x', 'x')$s$, 'denied');
 
