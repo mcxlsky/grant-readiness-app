@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { IconUser, IconUsers, IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
+import { IconBook2, IconUser, IconUsers, IconSun, IconMoon, IconLogout } from "@tabler/icons-react";
 import type { Theme } from "@/lib/theme";
 import { signOutConsultant } from "@/lib/admin-session";
 import { ROLE_LABELS, type FirmRole } from "@/lib/auth/consultant";
@@ -78,6 +78,13 @@ export function ProfileDropdown({ theme, onToggleTheme, adminName = "Admin", adm
               </div>
             </div>
             <div className="py-1">
+              <a
+                href="/dashboard/catalog"
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-700/50"
+              >
+                <IconBook2 className="h-3.5 w-3.5" />
+                Grant catalog
+              </a>
               {role === "admin" && (
                 <a
                   href="/dashboard/team"

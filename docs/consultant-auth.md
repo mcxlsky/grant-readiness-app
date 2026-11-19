@@ -22,9 +22,26 @@ Do these once per Supabase project.
 5. Add `SUPABASE_SERVICE_ROLE_KEY` to `.env.local` and to the Netlify site settings, from **Project Settings → API Keys**. It can read and change everything in the project, so never give it a `NEXT_PUBLIC_` name or commit it. Without it, the Team page still lists people, but sending invitations shows an error.
 6. Run the migrations and deploy, close together. Older app code queries the database as anon, so it loses its data once `003` runs. The current code reads `firm_members`, so sign-in fails until `004` runs. Either way, the gap lasts only as long as the steps below take.
    1. Make sure you have a confirmed Auth user and a `consultants` row, because `004` turns those into the first firm's admins.
-   2. In the SQL Editor, run `002_consultants.sql` if it hasn't been run, then `003_row_level_security.sql`, then `004_firms.sql`. `004` refuses to run before `003`.
+   2. In the SQL Editor, run `002_consultants.sql` if it hasn't been run, then `003_row_level_security.sql`, `004_firms.sql` and `005_firm_catalog.sql`, each in a new query. Each one refuses to run before the one it needs.
    3. Check your row is there with `select * from firm_members;`. Without it you'll be locked out.
    4. Deploy the app code.
+
+## Grant catalog
+
+Each firm has its own funders and programs. Every member can read them in **Grant catalog** in the profile menu and in the dashboard's grants view. Only firm admins can change them.
+
+An admin imports a spreadsheet saved as CSV. Only a funder name column is required. The importer also reads website, type, focus areas, service area, programs, deadlines, amounts, contact, status and how to apply when those columns exist. It shows a preview before saving anything:
+
+- **Duplicates:** rows for the same funder spelled differently, such as "W. O'Neil" and "The W O'Neil Foundation", become one funder. Names that might be the same but aren't certain, like "Cafritz Foundation" and "Morris and Gwendolyn Cafritz Foundation", are listed for someone to check. They're never merged automatically.
+- **Deadlines:** past dates become a typical cycle, like "Typically Mar 1, Jul 1, Nov 1", and an estimated next deadline. The estimate is marked as one until someone checks the funder's site.
+- **Status:** a spreadsheet's pipeline status describes one client's application, not the funder, so it's kept as a note. Only clear signals about the funder, such as "Rolling", "Invitation-based" or "Not currently funding", set its availability.
+- **Amounts:** what clients asked for becomes the program's amount range. Amounts over $10 million are skipped as likely typos.
+
+Importing again updates funders and programs it recognises and adds new ones. It never deletes, and blank cells don't overwrite what's stored. The whole import saves in one transaction, so it either all saves or none of it does.
+
+Contacts and notes often include personal email addresses. Only the firm can read them, but keep the spreadsheets themselves out of git.
+
+The 15 sample funders from `001_foundation.sql` move into the first firm and are marked `source = 'sample'`. Their details are made up, so delete them once real ones are imported: `delete from funders where source = 'sample';`. Check nothing important is linked to them first, because deleting a funder also deletes its programs.
 
 ## Add someone to a firm
 
@@ -89,7 +106,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f supabase/tests
 
 ## What this does not protect
 
-- **Separation between firms.** `organizations`, `applications` and the grant catalog have no `firm_id`, so every consultant in every firm can read and edit all of them. Much of the dashboard also still lives in `localStorage`. Don't onboard an outside firm until that work is done.
+- **Separation between firms for client data.** The grant catalog belongs to a firm, but `organizations`, `grant_engagements` and `applications` have no `firm_id`, so every consultant in every firm can read and edit all of them. Much of the dashboard also still lives in `localStorage`. Don't onboard an outside firm until that work is done.
 - **Applicant data.** Applications stay in the applicant's browser, so they don't reach the database and a consultant only sees them in the same browser. Moving `/portal` to Supabase needs a way to prove the applicant owns the email, such as a magic link. An anon policy or RPC that looks applications up by email would let anyone read an application by guessing the address.
 - **The service role key and the SQL Editor.** Both bypass row level security.
 - **What a consultant can fetch.** `/api/analyze` and `/api/logo` still fetch whatever URL or domain they're given, without blocking private addresses, so a signed-in consultant can point them anywhere the server can reach.

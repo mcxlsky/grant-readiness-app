@@ -1,6 +1,8 @@
 -- ============================================================
--- Row level security test for 003_row_level_security.sql and 004_firms.sql.
--- After 004, access comes from firm_members, not the consultants table.
+-- Row level security test for 003_row_level_security.sql, 004_firms.sql and
+-- 005_firm_catalog.sql. After 004, access comes from firm_members, not the
+-- consultants table. After 005, the catalog belongs to a firm and only its
+-- admins can change it.
 -- Run with psql against a fresh LOCAL Supabase stack (`supabase start`) that has
 -- the migrations applied and no other rows in the app tables. Everything runs in one transaction and rolls back.
 -- Fails with an error, naming each mismatch, if any access rule is wrong.
@@ -35,10 +37,11 @@ insert into grant_engagements (id, org_id) values
   ('00000000-0000-4000-c000-000000000001', '00000000-0000-4000-b000-000000000001');
 insert into applications (id, org_name, ein, contact_name, contact_email, project_title) values
   ('00000000-0000-4000-d000-000000000001', 'RLS Test Org', '999999991', 'A', 'a@example.com', 'P');
-insert into funders (id, name) values
-  ('00000000-0000-4000-e000-000000000001', 'RLS Test Funder');
-insert into grant_opportunities (id, funder_id, program) values
-  ('00000000-0000-4000-f000-000000000001', '00000000-0000-4000-e000-000000000001', 'RLS Test Program');
+insert into funders (id, firm_id, name, name_key) values
+  ('00000000-0000-4000-e000-000000000001', '00000000-0000-4000-9000-000000000001', 'RLS Test Funder', 'rls test funder');
+insert into grant_opportunities (id, firm_id, funder_id, program, program_key) values
+  ('00000000-0000-4000-f000-000000000001', '00000000-0000-4000-9000-000000000001',
+   '00000000-0000-4000-e000-000000000001', 'RLS Test Program', 'rls test program');
 
 create temp table results (who text, stmt text, expected text, actual text) on commit drop;
 
@@ -110,10 +113,13 @@ begin
   perform pg_temp.expect(who, 'delete from grant_engagements', case when can_write_org_data then 'ok:1' when who = 'anon' then 'denied' else 'ok:0' end);
   perform pg_temp.expect(who, 'delete from applications', case when can_write_org_data then 'ok:1' when who = 'anon' then 'denied' else 'ok:0' end);
 
-  -- The catalog is read-only through the API, even for consultants.
-  perform pg_temp.expect(who, $s$insert into funders (name) values ('x')$s$, 'denied');
-  perform pg_temp.expect(who, $s$update funders set url = 'x'$s$, 'denied');
-  perform pg_temp.expect(who, 'delete from grant_opportunities', 'denied');
+  -- Only firm admins change the catalog. None of these callers is one: anon has no
+  -- grant at all, and for signed-in callers the policies match no rows.
+  perform pg_temp.expect(who, $s$insert into funders (firm_id, name, name_key)
+    values ('00000000-0000-4000-9000-000000000001', 'x', 'x')$s$, 'denied');
+  perform pg_temp.expect(who, $s$update funders set url = 'x'$s$, case when who = 'anon' then 'denied' else 'ok:0' end);
+  perform pg_temp.expect(who, 'delete from grant_opportunities', case when who = 'anon' then 'denied' else 'ok:0' end);
+  perform pg_temp.expect(who, $s$select public.import_catalog('00000000-0000-4000-9000-000000000001', '[]')$s$, 'denied');
 
   -- RLS doesn't cover TRUNCATE, so these rely on the grants being gone.
   perform pg_temp.expect(who, 'truncate organizations cascade', 'denied');

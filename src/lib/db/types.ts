@@ -4,6 +4,9 @@
  */
 
 import type { AnalysisData } from "../types";
+import type { Availability, FunderType } from "../catalog/import";
+
+export type { Availability, FunderType };
 
 /* ── Lifecycle stages ────────────────────────────────────── */
 
@@ -60,9 +63,18 @@ export interface DbOrganization {
 
 export interface DbFunder {
   id: string;
+  firm_id: string;
   name: string;
   url: string | null;
-  type: "Federal" | "Foundation" | "Corporate" | "State" | "Community Foundation";
+  type: FunderType;
+  ein: number | null;
+  focus_areas: string[];
+  service_areas: string[];
+  availability: Availability;
+  how_to_apply: string;
+  contact: string;
+  notes: string;
+  source: string;
   created_at: string;
 }
 
@@ -75,10 +87,13 @@ export interface DbGrantOpportunity {
   amount_min: number;
   amount_max: number;
   deadline: string;
+  /** Estimated from past dates when deadline_estimated is true. */
+  next_deadline?: string | null;
+  deadline_estimated?: boolean;
   url: string | null;
   source: string;
   eligibility: string[];
-  type: "Federal" | "Foundation" | "Corporate" | "State";
+  type: FunderType;
   active: boolean;
   created_at: string;
   updated_at: string;
