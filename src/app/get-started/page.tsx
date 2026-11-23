@@ -435,7 +435,7 @@ function TagInput({
 
 /* ── Page ──────────────────────────────────────────────── */
 
-const BURST_COLORS = ["bg-brand-sky", "bg-indigo-600", "bg-brand-orange", "bg-emerald-600", "bg-amber-400"];
+const BURST_COLORS = ["bg-brand-sky", "bg-indigo-600", "bg-brand-red", "bg-emerald-600", "bg-amber-400"];
 
 function SuccessBadge() {
   const prefersReducedMotion = useReducedMotion();

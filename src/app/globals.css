@@ -46,10 +46,10 @@ html:has([data-snap-point]) {
   .btn-sheen:hover {
     background-image: linear-gradient(
       110deg,
-      theme("colors.brand.orange-deep") 0%,
-      theme("colors.brand.orange") 35%,
-      theme("colors.brand.orange-light") 65%,
-      theme("colors.brand.orange") 100%
+      theme("colors.brand.red-deep") 0%,
+      theme("colors.brand.red") 35%,
+      theme("colors.brand.red-light") 65%,
+      theme("colors.brand.red") 100%
     );
     animation: btn-drift 2.5s ease-in-out infinite alternate;
   }
@@ -77,6 +77,22 @@ html:has([data-snap-point]) {
   .btn-sheen:hover {
     animation: none;
   }
+}
+
+/* ── Dot grid background ───────────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(
+    circle,
+    theme("colors.gray.300 / 55%") 0.6px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  /* Clear behind the left-aligned content, building toward the edges. */
+  mask-image: radial-gradient(
+    ellipse 75% 70% at 30% 50%,
+    transparent 25%,
+    black 100%
+  );
 }
 
 /* ── Hero brand gradient ───────────────────────────────── */
